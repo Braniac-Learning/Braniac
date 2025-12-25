@@ -79,13 +79,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sign-in-btn {
-  font-family: 'cascadia code', monospace;
   background: #F0F0F0;
   color: #0F0F0F;
   padding: 0.6rem 1.5rem;
+  font-family: 'Cascadia Code', monospace;
+  font-size: 0.95rem;
+  font-weight: bold;
   border: none;
   border-radius: 999px;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -146,12 +147,13 @@ h1, h2, h3, h4, h5, h6 {
 .cta-btn {
   margin-top: 2rem;
   padding: 1rem 2.5rem;
+  font-family: 'Cascadia Code', monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
   border: none;
   border-radius: 999px;
   background: linear-gradient(90deg, #EE247C, #FE77AA);
   color: #F0F0F0;
-  font-weight: 600;
-  font-size: 1.1rem;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -265,11 +267,6 @@ h1, h2, h3, h4, h5, h6 {
   color: #F0F0F0;
 }
 
-.why-card:hover {
-  margin-bottom: 15px;
-  transition: all ease 0.3s;
-}
-
 .why-icon {
   color: #EE247C;
   font-size: 2.5rem;
@@ -363,4 +360,130 @@ h1, h2, h3, h4, h5, h6 {
   text-align: center;
   padding: 1rem;
   border-top: 1px solid #FE77AA;
+}
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+.auth-overlay.active { display: flex; }
+
+.auth-container {
+  background: #F0F0F0;
+  width: 360px;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  padding: 1.5rem 1.5rem 2rem;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 90vh;
+
+  /* ✅ added */
+  overflow-y: auto;
+}
+
+/* Allow scrolling without visible scrollbar */
+.auth-container {
+  overflow-y: auto;
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE 10+ */
+}
+
+.auth-container::-webkit-scrollbar {
+  display: none;                  /* Chrome, Safari, Edge */
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #0F0F0F;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.close-modal:hover {
+  transform: rotate(90deg) scale(1.2);
+}
+
+.auth-logo-container { margin-bottom: 0.5rem; }
+.auth-logo { height: 48px; width: auto; }
+
+.auth-title { 
+  font-family: 'Orbitron', sans-serif; 
+  font-size: 1.5rem; 
+  color: #EE247C; 
+  margin-bottom: 0.25rem; 
+}
+.auth-subtitle { 
+  font-family: 'Cascadia Code', monospace; 
+  font-size: 0.85rem; 
+  color: #0F0F0F; 
+  margin-bottom: 1rem; 
+}
+
+.auth-panel { display: flex; flex-direction: column; gap: 0.65rem; }
+.auth-panel.hidden { display: none; }
+
+.auth-form { display: flex; flex-direction: column; gap: 0.65rem; }
+.auth-form input {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #CCCCCC;
+  background: #0F0F0F;
+  color: #CCCCCC;
+  font-family: 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.auth-form input:focus { border-color: #FE77AA; outline: none; }
+
+.auth-btn {
+  margin-top: 0.5rem;
+  padding: 0.65rem;
+  font-family: 'Cascadia Code', monospace;
+  font-weight: bold;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+  color: #F0F0F0;
+  transition: all 0.2s ease;
+}
+.auth-btn:hover { background: #0F0F0F; }
+
+.guest-btn {
+  margin-top: 0.5rem;
+  padding: 0.55rem;
+  font-size: 0.9rem;
+  font-family: 'Cascadia Code', monospace;
+  border-radius: 14px;
+  border: none;
+  background: #0F0F0F;
+  color: #F0F0F0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.guest-btn:hover { background: linear-gradient(90deg, #EE247C, #FE77AA); }
+
+.switch-text { font-size: 0.8rem; margin-top: 0.3rem; }
+.switch-text a { color: #EE247C; text-decoration: none; position: relative; }
+.switch-text a::after { content: ''; position: absolute; bottom: -2px; left: 0; height: 2px; width: 0; background: #FE77AA; transition: width 0.25s ease; }
+.switch-text a:hover::after { width: 100%; }
+
+@keyframes fadeIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }

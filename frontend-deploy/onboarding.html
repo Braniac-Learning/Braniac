@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BRANIAC - Learn anything, outsmart everyone. AI-crafted quizzes for smarter learning." />
+  <title>BRANIAC LEARNING</title>
+  <link rel="stylesheet" href="onboarding.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" />
+  <!-- Standard favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+
+<!-- Apple Touch Icon for iOS -->
+<link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+
+<!-- Android / Chrome icons -->
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/favicon/android-chrome-512x512.png">
+
+<!-- Manifest for mobile and PWA support -->
+<link rel="manifest" href="assets/favicon/site.webmanifest">
+
+ <!-- 🎨 Theme color for browser UI -->
+<meta name="theme-color" content="#0F0F0F">
+
+<!-- HTML Meta Tags -->
+<title>BRANIAC — High Energy. Zero Boredom. All Brain.</title>
+<meta name="description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+ 
+<!-- Open Graph Meta Tags -->
+<meta property="og:url" content="https://braniaclearning.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BRANIAC — High Energy. Zero Boredom. All Brain.">
+<meta property="og:description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+<meta property="og:image" content="https://braniaclearning.netlify.app/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter Meta Tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta property="twitter:domain" content="braniaclearning.netlify.app">
+<meta property="twitter:url" content="https://braniaclearning.netlify.app/">
+<meta name="twitter:title" content="BRANIAC — High Energy. Zero Boredom. All Brain.">
+<meta name="twitter:description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+<meta name="twitter:image" content="https://braniaclearning.netlify.app/images/og-image.png">
+</head>
+<body>
+
+<!-- ================= WHO ARE YOU ================= -->
+<section class="onboarding-section active" id="whoAreYou">
+  <button class="close-section" aria-label="Exit onboarding">&times;</button>
+
+  <header class="section-header">
+    <h1>WHO ARE YOU?</h1>
+    <p class="subtitle">Help us tailor BRANIAC to your learning style.</p>
+  </header>
+
+  <div class="options-grid">
+    <button class="option-btn">Student 🎓</button>
+    <button class="option-btn">Educator 🍎</button>
+    <button class="option-btn">Self-Learner 📘</button>
+    <button class="option-btn">Tutor 🧠</button>
+    <button class="option-btn">Researcher 🔬</button>
+    <button class="option-btn">Exam Candidate 📝</button>
+    <button class="option-btn">STEM Learner ⚙️</button>
+    <button class="option-btn">Creative Learner 🎨</button>
+    <button class="option-btn">Career Switcher 🚀</button>
+    <button class="option-btn">Lifelong Learner ♾️</button>
+    <button class="option-btn">Academic Writer ✍️</button>
+    <button class="option-btn">Other ❓</button>
+  </div>
+
+  <div class="section-buttons">
+    <button class="proceed-btn" data-next="useBRANIAC">PROCEED</button>
+  </div>
+</section>
+
+<!-- ================= USE BRANIAC FOR ================= -->
+<section class="onboarding-section" id="useBRANIAC">
+  <button class="close-section" aria-label="Exit onboarding">&times;</button>
+
+  <header class="section-header">
+    <h1>WHAT WILL YOU USE BRANIAC FOR?</h1>
+    <p class="subtitle">Select all that apply.</p>
+  </header>
+
+  <div class="options-grid">
+    <button class="option-btn">Concept Learning 📖</button>
+    <button class="option-btn">Skill Practice 🧩</button>
+    <button class="option-btn">Exam Prep 📝</button>
+    <button class="option-btn">Homework Help 📚</button>
+    <button class="option-btn">Research Support 🔍</button>
+    <button class="option-btn">Revision & Recall 🔄</button>
+    <button class="option-btn">Teaching Help 👩‍🏫</button>
+    <button class="option-btn">Project Work 🛠️</button>
+    <button class="option-btn">Career Upskilling 💼</button>
+    <button class="option-btn">Brain Training 🧠</button>
+    <button class="option-btn">AI-Guided Learning 🤖</button>
+    <button class="option-btn">Other ❓</button>
+  </div>
+
+  <div class="section-buttons">
+    <button class="return-btn" data-prev="whoAreYou">RETURN</button>
+    <button class="proceed-btn" data-next="profilePicture">PROCEED</button>
+  </div>
+</section>
+
+<section id="profilePicture" class="onboarding-section">
+  <div class="profile-container">
+    <h1>PROFILE PICTURE</h1>
+    <p class="subtitle">Who’s behind the BRAIN?</p>
+
+      <div class="incognito-circle">
+  <img
+    src="assets/icons/profile.svg"
+    alt="Profile icon"
+    class="profile-icon"
+  />
+</div>
+      <div class="profile-buttons">
+        <button class="profile-btn upload-btn">UPLOAD</button>
+        <button class="profile-btn skip-btn">LATER</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="onboarding.js"></script>
+</body>
+</html>
