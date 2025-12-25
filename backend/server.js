@@ -16,6 +16,8 @@ const io = socketIo(server, {
     cors: {
         origin: [
             'http://localhost:3000',
+            'http://localhost:5500',
+            'http://127.0.0.1:5500',
             'http://localhost:5000',
             'http://localhost:8000',
             'http://localhost:8001',
@@ -42,6 +44,8 @@ const upload = multer({
 app.use(cors({
     origin: [
         'http://localhost:3000',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500',
         'http://localhost:5000',
         'http://localhost:8000',
         'http://localhost:8001',
@@ -920,7 +924,7 @@ function generateMockQuiz(topic, questionCount, difficulty = 'intermediate') {
 
     const selectedQuestions = difficultyData[difficulty]?.questions || difficultyData.intermediate.questions;
     
-    // Extend with more creative questions if needed
+    // Generate additional questions dynamically to reach the requested count
     const additionalQuestions = [
         {
             question: `What would happen if the core principles of ${topic} were applied to solve a completely different type of problem?`,
@@ -954,7 +958,36 @@ function generateMockQuiz(topic, questionCount, difficulty = 'intermediate') {
         }
     ];
 
-    const allQuestions = [...selectedQuestions, ...additionalQuestions];
+    let allQuestions = [...selectedQuestions, ...additionalQuestions];
+    
+    // Generate more questions if needed to reach the requested count
+    const questionTemplates = [
+        { q: `Why is ${topic} considered important in modern contexts?`, opts: ["Outdated concept", "Widely applicable", "Only academic", "Irrelevant"], correct: "B" },
+        { q: `What misconceptions exist about ${topic}?`, opts: ["All beliefs are correct", "People often oversimplify it", "No misconceptions", "It's too simple"], correct: "B" },
+        { q: `How do experts typically approach learning ${topic}?`, opts: ["Memorization only", "Systematic study", "Random trial", "Avoiding practice"], correct: "B" },
+        { q: `What are the main challenges in understanding ${topic}?`, opts: ["No challenges", "Complexity and interconnections", "Too easy", "Not worth learning"], correct: "B" },
+        { q: `How does ${topic} relate to real-world problem solving?`, opts: ["Not related", "Essential foundation", "Only theory", "Rarely used"], correct: "B" },
+        { q: `What skills are developed through studying ${topic}?`, opts: ["No skills", "Analytical and critical thinking", "Only memorization", "Nothing useful"], correct: "B" },
+        { q: `How can ${topic} be applied in your daily life?`, opts: ["Cannot be applied", "Multiple practical uses", "Only in work", "Never applicable"], correct: "B" },
+        { q: `What is the relationship between ${topic} and innovation?`, opts: ["No relationship", "Drives innovation", "Prevents innovation", "Unrelated concept"], correct: "B" },
+        { q: `How does ${topic} contribute to professional success?`, opts: ["Doesn't help", "Highly valuable skill", "Minimal impact", "Career limiting"], correct: "B" },
+        { q: `What evidence supports understanding ${topic}?`, opts: ["No evidence", "Research and real-world success", "Just opinion", "Theoretical only"], correct: "B" }
+    ];
+
+    // Fill remaining questions dynamically
+    while (allQuestions.length < questionCount) {
+        const template = questionTemplates[allQuestions.length % questionTemplates.length];
+        allQuestions.push({
+            question: template.q,
+            options: {
+                A: template.opts[0],
+                B: template.opts[1],
+                C: template.opts[2],
+                D: template.opts[3]
+            },
+            correct: template.correct
+        });
+    }
     
     // Return the requested number of questions
     const finalQuestions = allQuestions.slice(0, questionCount);
@@ -1093,7 +1126,36 @@ function generateMockDocumentQuiz(fileContent, questionCount, difficulty = 'inte
         }
     ];
 
-    const allQuestions = [...selectedQuestions, ...additionalQuestions];
+    let allQuestions = [...selectedQuestions, ...additionalQuestions];
+
+    // Generate more questions dynamically if needed
+    const docQuestionTemplates = [
+        { q: "What is the primary focus of the document?", opts: ["Unrelated topics", "Main subject matter", "Contradictions", "Unimportant details"], correct: "B" },
+        { q: "How well does the document support its main points?", opts: ["Not supported", "With evidence and examples", "Only opinion", "Poorly supported"], correct: "B" },
+        { q: "What key takeaway can be extracted from this document?", opts: ["No clear message", "Important insights provided", "Confusing", "Irrelevant"], correct: "B" },
+        { q: "How does this document enhance understanding of the topic?", opts: ["No enhancement", "Provides clarity and depth", "Causes confusion", "Oversimplifies"], correct: "B" },
+        { q: "What makes this document valuable for learners?", opts: ["No value", "Clear explanations and examples", "Too technical", "Lacks structure"], correct: "B" },
+        { q: "How are concepts organized in this document?", opts: ["Randomly scattered", "Logically structured", "Very confusing", "Too simple"], correct: "B" },
+        { q: "What aspects of the content are most significant?", opts: ["All equally unimportant", "Core concepts critical to understanding", "Only minor details matter", "Nothing significant"], correct: "B" },
+        { q: "How does the document address potential questions?", opts: ["Ignores questions", "Thoroughly addresses concerns", "Avoids clarification", "No explanation provided"], correct: "B" },
+        { q: "What would someone learn by studying this document?", opts: ["Nothing useful", "Practical and theoretical knowledge", "Only basics", "Irrelevant information"], correct: "B" },
+        { q: "How applicable is this document's content in practice?", opts: ["Never applicable", "Highly practical and useful", "Only theoretical", "Rarely applicable"], correct: "B" }
+    ];
+
+    // Fill remaining questions dynamically
+    while (allQuestions.length < questionCount) {
+        const template = docQuestionTemplates[allQuestions.length % docQuestionTemplates.length];
+        allQuestions.push({
+            question: template.q,
+            options: {
+                A: template.opts[0],
+                B: template.opts[1],
+                C: template.opts[2],
+                D: template.opts[3]
+            },
+            correct: template.correct
+        });
+    }
     
     // Return the requested number of questions
     const finalQuestions = allQuestions.slice(0, questionCount);
