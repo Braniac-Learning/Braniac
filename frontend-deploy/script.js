@@ -71,82 +71,100 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
 
-// Elements
-const authOverlay = document.getElementById('authOverlay');
-const signInBtn = document.querySelector('.sign-in-btn'); // landing page sign in button
-const closeModal = document.getElementById('closeModal');
+    // -----------------------------
+    // AUTH MODAL HANDLING
+    // -----------------------------
+    const authOverlay = document.getElementById('authOverlay');
+    const signInBtn = document.querySelector('.sign-in-btn');
+    const closeModal = document.getElementById('closeModal');
 
-const switchToRegister = document.getElementById('switchToRegister');
-const switchToSignIn = document.getElementById('switchToSignIn');
+    const switchToRegister = document.getElementById('switchToRegister');
+    const switchToSignIn = document.getElementById('switchToSignIn');
 
-const signInPanel = document.getElementById('signInPanel');
-const registerPanel = document.getElementById('registerPanel');
+    const signInPanel = document.getElementById('signInPanel');
+    const registerPanel = document.getElementById('registerPanel');
 
-const authTitle = document.getElementById('authTitle');
-const authDesc = document.getElementById('authDesc');
+    const authTitle = document.querySelector('.auth-title');
+    const authDesc = document.querySelector('.auth-subtitle');
 
-const registerForm = document.getElementById('registerForm');
+    // Open modal
+    signInBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      authOverlay.classList.add('active');
+      signInPanel.classList.remove('hidden');
+      registerPanel.classList.add('hidden');
+      authTitle.textContent = "SIGN IN";
+      authDesc.textContent = "Access your scores and achievements";
+    });
 
-// Open modal
-signInBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  authOverlay.classList.add('active');
-  signInPanel.classList.remove('hidden');
-  registerPanel.classList.add('hidden');
-  authTitle.textContent = "Sign In to BRANIAC";
-  authDesc.innerHTML = "Access your <strong>Scores</strong> and <strong>Achievements</strong>.";
-});
+    // Close modal
+    closeModal.addEventListener('click', () => {
+      authOverlay.classList.remove('active');
+    });
 
-// Close modal
-closeModal.addEventListener('click', () => {
-  authOverlay.classList.remove('active');
-});
+    // Switch panels
+    switchToRegister.addEventListener('click', (e) => {
+      e.preventDefault();
+      signInPanel.classList.add('hidden');
+      registerPanel.classList.remove('hidden');
+      authTitle.textContent = "REGISTER";
+      authDesc.textContent = "Create your account to track your progress";
+    });
 
-// Switch panels
-switchToRegister.addEventListener('click', (e) => {
-  e.preventDefault();
-  signInPanel.classList.add('hidden');
-  registerPanel.classList.remove('hidden');
-  authTitle.textContent = "Join the BRANIAC Community";
-  authDesc.innerHTML = "Create your account to save your <strong>Scores</strong>, earn <strong>Achievements</strong>, and show off your brainpower.";
-});
+    switchToSignIn.addEventListener('click', (e) => {
+      e.preventDefault();
+      registerPanel.classList.add('hidden');
+      signInPanel.classList.remove('hidden');
+      authTitle.textContent = "SIGN IN";
+      authDesc.textContent = "Access your scores and achievements";
+    });
 
-switchToSignIn.addEventListener('click', (e) => {
-  e.preventDefault();
-  registerPanel.classList.add('hidden');
-  signInPanel.classList.remove('hidden');
-  authTitle.textContent = "Sign In to BRANIAC";
-  authDesc.innerHTML = "Access your <strong>Scores</strong> and <strong>Achievements</strong>.";
-});
+    // -----------------------------
+    // REGISTER FORM SUBMISSION
+    // -----------------------------
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+      registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-registerForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  if (!registerForm.checkValidity()) {
-    registerForm.reportValidity();
-    return;
-  }
-  window.location.href = 'onboarding.html'; // update path if needed
-});
+        if (!registerForm.checkValidity()) {
+          registerForm.reportValidity();
+          return;
+        }
 
-const toggleButtons = document.querySelectorAll('.toggle-password');
+        // Grab first name
+        const firstNameInput = registerForm.querySelector('input[placeholder="First Name"]');
+        const firstName = firstNameInput ? firstNameInput.value.trim() : "";
+        if (firstName) {
+          localStorage.setItem('braniacFirstName', firstName);
+        }
 
-toggleButtons.forEach(btn => {
-  const input = btn.previousElementSibling;
-  const img = btn.querySelector('img');
-
-  // Original and toggled icon paths
-  const originalIcon = 'assets/icons/eye.svg';
-  const toggledIcon = 'assets/icons/eye%282%29.svg'; // parentheses encoded
-
-  btn.addEventListener('click', () => {
-    if (input.type === 'password') {
-      input.type = 'text';
-      img.src = toggledIcon;
-    } else {
-      input.type = 'password';
-      img.src = originalIcon;
+        // Redirect to onboarding page
+        window.location.href = 'onboarding.html';
+      });
     }
-  });
+
+    // -----------------------------
+    // PASSWORD TOGGLE HANDLER
+    // -----------------------------
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+
+    toggleButtons.forEach(btn => {
+      const input = btn.closest('.password-wrapper').querySelector('input');
+      const img = btn.querySelector('img');
+
+      const originalIcon = 'assets/icons/eye.svg';
+      const toggledIcon = 'assets/icons/eye(2).svg';
+
+      btn.addEventListener('click', () => {
+        if (input.type === 'password') {
+          input.type = 'text';
+          img.src = toggledIcon;
+        } else {
+          input.type = 'password';
+          img.src = originalIcon;
+        }
+      });
+    });
 });

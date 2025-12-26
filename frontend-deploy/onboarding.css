@@ -131,6 +131,102 @@ h1 {
   background: linear-gradient(90deg, #EE247C, #FE77AA);
 }
 
+/* ===============================
+   SECTION ANIMATION TRIGGER
+================================ */
+
+.onboarding-section.animate-in .section-header {
+  animation: headerFadeIn 0.45s ease-out forwards;
+}
+
+.onboarding-section.animate-in .option-btn {
+  animation: optionFadeIn 0.25s ease-out forwards;
+}
+
+@keyframes headerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes optionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onboarding-section.animate-in .option-btn:nth-child(1)  { animation-delay: 0.035s; }
+.onboarding-section.animate-in .option-btn:nth-child(2)  { animation-delay: 0.07s; }
+.onboarding-section.animate-in .option-btn:nth-child(3)  { animation-delay: 0.105s; }
+.onboarding-section.animate-in .option-btn:nth-child(4)  { animation-delay: 0.14s; }
+.onboarding-section.animate-in .option-btn:nth-child(5)  { animation-delay: 0.175s; }
+.onboarding-section.animate-in .option-btn:nth-child(6)  { animation-delay: 0.21s; }
+.onboarding-section.animate-in .option-btn:nth-child(7)  { animation-delay: 0.245s; }
+.onboarding-section.animate-in .option-btn:nth-child(8)  { animation-delay: 0.28s; }
+.onboarding-section.animate-in .option-btn:nth-child(9)  { animation-delay: 0.315s; }
+.onboarding-section.animate-in .option-btn:nth-child(10) { animation-delay: 0.35s; }
+.onboarding-section.animate-in .option-btn:nth-child(11) { animation-delay: 0.385s; }
+.onboarding-section.animate-in .option-btn:nth-child(12) { animation-delay: 0.42s; }
+
+.section-header,
+.option-btn {
+  opacity: 0;
+}
+
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(1)  { animation-delay: 0.105s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(2)  { animation-delay: 0.14s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(3)  { animation-delay: 0.175s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(4)  { animation-delay: 0.21s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(5)  { animation-delay: 0.245s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(6)  { animation-delay: 0.28s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(7)  { animation-delay: 0.315s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(8)  { animation-delay: 0.35s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(9)  { animation-delay: 0.385s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(10) { animation-delay: 0.42s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(11) { animation-delay: 0.455s; }
+.onboarding-section:not(:first-of-type).animate-in .option-btn:nth-child(12) { animation-delay: 0.49s; }
+
+/* Stronger reveal for subsequent onboarding sections */
+.onboarding-section:not(:first-of-type).animate-in .section-header {
+  animation: headerFadeInStrong 0.5s ease-out forwards;
+}
+
+@keyframes headerFadeInStrong {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes optionFadeInStrong {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onboarding-section:not(:first-of-type).animate-in .section-header {
+  animation-delay: 0.035s;
+}
+
 /* Container modal-style */
 .profile-container {
   background: #F0F0F0;

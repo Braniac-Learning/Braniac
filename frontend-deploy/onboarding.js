@@ -1,5 +1,8 @@
-// onboarding.js
+// ===============================
+// ONBOARDING CONTROLLER
+// ===============================
 
+// Section references
 const sections = document.querySelectorAll('.onboarding-section');
 const proceedButtons = document.querySelectorAll('.proceed-btn');
 const returnButtons = document.querySelectorAll('.return-btn');
@@ -7,10 +10,39 @@ const closeButtons = document.querySelectorAll('.close-section');
 
 let currentSection = document.querySelector('.onboarding-section.active');
 
-/* ===============================
-   SECTION TRANSITION HANDLER
-================================ */
+// ===============================
+// HELLO, FIRST NAME GREETING
+// ===============================
+const whoAreYouHeader = document.querySelector('#whoAreYou h1');
+const firstName = localStorage.getItem('braniacFirstName');
 
+if (firstName && whoAreYouHeader) {
+  whoAreYouHeader.textContent = `HELLO, ${firstName.toUpperCase()}`;
+}
+
+// ===============================
+// ANIMATION TRIGGER
+// ===============================
+function triggerSectionAnimation(section) {
+  if (!section) return;
+
+  // Reset animation
+  section.classList.remove('animate-in');
+
+  // Force reflow so animation restarts
+  void section.offsetWidth;
+
+  section.classList.add('animate-in');
+}
+
+// Trigger animation on first visible section
+if (currentSection) {
+  triggerSectionAnimation(currentSection);
+}
+
+// ===============================
+// SECTION TRANSITION HANDLER
+// ===============================
 function transitionTo(nextId, direction = 'forward') {
   const nextSection = document.getElementById(nextId);
   if (!nextSection || nextSection === currentSection) return;
@@ -22,11 +54,13 @@ function transitionTo(nextId, direction = 'forward') {
 
   // Prepare next section
   nextSection.classList.add('active');
+  triggerSectionAnimation(nextSection);
+
   nextSection.classList.add(
     direction === 'forward' ? 'slide-in-right' : 'slide-in-left'
   );
 
-  // Cleanup after animation
+  // Cleanup
   setTimeout(() => {
     currentSection.classList.remove(
       'active',
@@ -43,10 +77,9 @@ function transitionTo(nextId, direction = 'forward') {
   }, 300); // MUST match CSS animation duration
 }
 
-/* ===============================
-   OPTION SELECTION LOGIC
-================================ */
-
+// ===============================
+// OPTION SELECTION LOGIC
+// ===============================
 sections.forEach(section => {
   const optionBtns = section.querySelectorAll('.option-btn');
   const proceedBtn = section.querySelector('.proceed-btn');
@@ -77,10 +110,9 @@ sections.forEach(section => {
   });
 });
 
-/* ===============================
-   PROCEED / RETURN BUTTONS
-================================ */
-
+// ===============================
+// PROCEED / RETURN BUTTONS
+// ===============================
 proceedButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.disabled) return;
@@ -94,10 +126,9 @@ returnButtons.forEach(btn => {
   });
 });
 
-/* ===============================
-   EXIT → LANDING PAGE
-================================ */
-
+// ===============================
+// EXIT → LANDING PAGE
+// ===============================
 closeButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     window.location.href = 'index.html';
