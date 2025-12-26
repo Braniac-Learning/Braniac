@@ -822,8 +822,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .toggle-password img {
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 1.19rem;
+  height: 1.19rem;
 }
 .auth-form input:focus { border-color: #FE77AA; outline: none; }
 
