@@ -136,22 +136,11 @@ h1 {
 ================================ */
 
 .onboarding-section.animate-in .section-header {
-  animation: headerFadeIn 0.45s ease-out forwards;
+  animation: headerFadeInStrong 0.5s ease-out forwards;
 }
 
 .onboarding-section.animate-in .option-btn {
   animation: optionFadeIn 0.25s ease-out forwards;
-}
-
-@keyframes headerFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 @keyframes optionFadeIn {
@@ -201,21 +190,14 @@ h1 {
   animation: headerFadeInStrong 0.5s ease-out forwards;
 }
 
+.onboarding-section:not(:first-of-type).animate-in .option-btn {
+  animation: optionFadeIn 0.25s ease-out forwards;
+}
+
 @keyframes headerFadeInStrong {
   from {
     opacity: 0;
     transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes optionFadeInStrong {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
   }
   to {
     opacity: 1;
