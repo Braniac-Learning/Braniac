@@ -6,9 +6,13 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
+const cookieParser = require('cookie-parser');
+// Load environment variables from .env for local development
+require('dotenv').config();
 
-// TODO: Replace with your actual Gemini API key
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyANt9WI56zqzUfP3M0p2gsLMkUfbFbUeWw';
+// Gemini API key should be provided via environment variable for security.
+// Set the environment variable GEMINI_API_KEY in production (do NOT commit keys).
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_HERE';
 
 const app = express();
 const server = http.createServer(app);
@@ -58,6 +62,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname)));
 
 // In-memory storage for quiz rooms
@@ -424,6 +429,129 @@ app.get('/health', (req, res) => {
         apiKey: GEMINI_API_KEY ? 'configured' : 'missing'
     });
 });
+
+// -----------------------------
+// Simple Authentication (in-memory, development only)
+// -----------------------------
+const crypto = require('crypto');
+const users = new Map(); // username -> { username, firstName, passwordHash, salt, createdAt }
+const sessions = new Map(); // token -> username
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+
+function validateUsername(username) {
+    // Allow letters, numbers, hyphens and underscores, no spaces
+    return typeof username === 'string' && /^[A-Za-z0-9_-]{3,30}$/.test(username);
+}
+
+function validateFirstName(firstName) {
+    // Allow letters, spaces and hyphens only
+    return typeof firstName === 'string' && /^[A-Za-z\s-]{1,50}$/.test(firstName);
+}
+
+function validatePassword(password) {
+    // No spaces, at least 8 characters
+    return typeof password === 'string' && password.length >= 8 && !/\s/.test(password);
+}
+
+function hashPassword(password, salt) {
+    return crypto.scryptSync(password, salt, 64).toString('hex');
+}
+
+function createSessionToken(username) {
+    const token = crypto.createHmac('sha256', SESSION_SECRET)
+        .update(username + ':' + Date.now() + ':' + crypto.randomBytes(16).toString('hex'))
+        .digest('hex');
+    sessions.set(token, { username, createdAt: Date.now() });
+    return token;
+}
+
+// Register route
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { username, firstName, password, confirmPassword } = req.body || {};
+
+        if (!username || !firstName || !password || !confirmPassword) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        if (!validateUsername(username)) {
+            return res.status(400).json({ error: 'Invalid username. Use letters, numbers, hyphens or underscores (3-30 chars), no spaces.' });
+        }
+
+        if (!validateFirstName(firstName)) {
+            return res.status(400).json({ error: 'Invalid first name. Use letters, spaces, and hyphens only.' });
+        }
+
+        if (!validatePassword(password)) {
+            return res.status(400).json({ error: 'Invalid password. Minimum 8 chars, no spaces.' });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({ error: 'Passwords do not match' });
+        }
+
+        const normalized = username.toLowerCase();
+        if (users.has(normalized)) {
+            return res.status(409).json({ error: 'Username already taken' });
+        }
+
+        const salt = crypto.randomBytes(16).toString('hex');
+        const passwordHash = hashPassword(password, salt);
+
+        const user = { username: normalized, firstName: firstName.trim(), passwordHash, salt, createdAt: Date.now() };
+        users.set(normalized, user);
+
+        const token = createSessionToken(normalized);
+
+        // Set HttpOnly cookie
+        res.cookie('session', token, { httpOnly: true, sameSite: 'lax' });
+
+        return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
+    } catch (err) {
+        console.error('Register error:', err);
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Login route
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { username, password } = req.body || {};
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required' });
+        }
+
+        const normalized = username.toLowerCase();
+        const user = users.get(normalized);
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const candidateHash = hashPassword(password, user.salt);
+        if (!crypto.timingSafeEqual(Buffer.from(candidateHash, 'hex'), Buffer.from(user.passwordHash, 'hex'))) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const token = createSessionToken(normalized);
+        res.cookie('session', token, { httpOnly: true, sameSite: 'lax' });
+
+        return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
+    } catch (err) {
+        console.error('Login error:', err);
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Simple middleware to get current user from session cookie or header
+function getUserFromRequest(req) {
+    const token = req.cookies && req.cookies.session || req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '');
+    if (!token) return null;
+    const s = sessions.get(token);
+    if (!s) return null;
+    const user = users.get(s.username);
+    return user || null;
+}
 
 // Favicon route
 app.get('/favicon.ico', (req, res) => {

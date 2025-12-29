@@ -121,11 +121,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // -----------------------------
-    // REGISTER FORM SUBMISSION
+    // REGISTER FORM SUBMISSION (calls backend)
     // -----------------------------
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
-      registerForm.addEventListener('submit', (e) => {
+      registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         if (!registerForm.checkValidity()) {
@@ -133,15 +133,121 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
 
-        // Grab first name
+        const usernameInput = registerForm.querySelector('input[placeholder="Username"]');
         const firstNameInput = registerForm.querySelector('input[placeholder="First Name"]');
-        const firstName = firstNameInput ? firstNameInput.value.trim() : "";
-        if (firstName) {
-          localStorage.setItem('braniacFirstName', firstName);
+        const passwordInput = registerForm.querySelector('input[placeholder="Password"]');
+        const confirmInput = registerForm.querySelector('input[placeholder="Confirm Password"]');
+
+        const username = usernameInput ? usernameInput.value.trim() : '';
+        const firstName = firstNameInput ? firstNameInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value : '';
+        const confirmPassword = confirmInput ? confirmInput.value : '';
+
+        // Client-side validation to match server rules
+        const usernameOk = /^[A-Za-z0-9_-]{3,30}$/.test(username);
+        const firstNameOk = /^[A-Za-z\s-]{1,50}$/.test(firstName);
+        const passwordOk = password.length >= 8 && !/\s/.test(password);
+
+        if (!usernameOk) return alert('Invalid username. Use letters, numbers, hyphens or underscores (3-30 chars), no spaces.');
+        if (!firstNameOk) return alert('Invalid first name. Use letters, spaces, and hyphens only.');
+        if (!passwordOk) return alert('Invalid password. Minimum 8 characters, no spaces.');
+        if (password !== confirmPassword) return alert('Passwords do not match');
+
+        try {
+          const resp = await fetch('http://localhost:3001/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ username, firstName, password, confirmPassword })
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) {
+            return alert(data.error || 'Registration failed');
+          }
+
+          // Save first name locally and redirect to onboarding
+          if (data.user && data.user.firstName) localStorage.setItem('braniacFirstName', data.user.firstName);
+          window.location.href = 'onboarding.html';
+        } catch (err) {
+          console.error('Register error:', err);
+          alert('Registration failed. Check console for details.');
+        }
+      });
+    }
+
+    // -----------------------------
+    // SIGN IN FORM SUBMISSION (calls backend)
+    // -----------------------------
+    const signInForm = document.querySelector('#signInPanel form');
+    const signinError = document.getElementById('signinError');
+    const signUsername = document.getElementById('signUsername');
+    const signPassword = document.getElementById('signPassword');
+
+    function clearSignInError() {
+      if (signinError) {
+        signinError.style.display = 'none';
+        signinError.textContent = '';
+      }
+      if (signUsername) signUsername.classList.remove('error');
+      if (signPassword) signPassword.classList.remove('error');
+    }
+
+    if (signUsername) signUsername.addEventListener('input', clearSignInError);
+    if (signPassword) signPassword.addEventListener('input', clearSignInError);
+
+    if (signInForm) {
+      signInForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        clearSignInError();
+
+        const username = signUsername ? signUsername.value.trim() : '';
+        const password = signPassword ? signPassword.value : '';
+
+        if (!username || !password) {
+          if (signinError) {
+            signinError.textContent = 'Please enter both username and password.';
+            signinError.style.display = 'block';
+          }
+          if (!username && signUsername) signUsername.classList.add('error');
+          if (!password && signPassword) signPassword.classList.add('error');
+          return;
         }
 
-        // Redirect to onboarding page
-        window.location.href = 'onboarding.html';
+        try {
+          const resp = await fetch('http://localhost:3001/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ username, password })
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) {
+            const msg = data && data.error ? data.error : 'Login failed';
+            // show inline error and mark inputs
+            if (signinError) {
+              signinError.textContent = msg;
+              signinError.style.display = 'block';
+            }
+            if (signUsername) signUsername.classList.add('error');
+            if (signPassword) signPassword.classList.add('error');
+            return;
+          }
+
+          if (data.user && data.user.firstName) localStorage.setItem('braniacFirstName', data.user.firstName);
+          clearSignInError();
+          authOverlay.classList.remove('active');
+        } catch (err) {
+          console.error('Login error:', err);
+          if (signinError) {
+            signinError.textContent = 'Network error — please try again.';
+            signinError.style.display = 'block';
+          }
+          if (signUsername) signUsername.classList.add('error');
+          if (signPassword) signPassword.classList.add('error');
+        }
       });
     }
 

@@ -858,6 +858,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .switch-text { font-size: 0.8rem; margin-top: 0.3rem; }
 .switch-text a { color: #EE247C; text-decoration: none; position: relative; }
+
+/* Inline input error styles for auth forms */
+.auth-form .input-error {
+  color: #b00020;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+.auth-form input.error {
+  border: 1.5px solid #b00020;
+  box-shadow: 0 0 0 3px rgba(176,0,32,0.06);
+}
 .switch-text a::after { content: ''; position: absolute; bottom: -2px; left: 0; height: 2px; width: 0; background: #FE77AA; transition: width 0.25s ease; }
 .switch-text a:hover::after { width: 100%; }
 
