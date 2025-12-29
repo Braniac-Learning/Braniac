@@ -25,8 +25,7 @@ services:
       - key: NODE_ENV
         value: production
 
-  - type: static
-    name: braniac-frontend
+  - name: braniac-frontend
     type: web
     runtime: static
     branch: main
