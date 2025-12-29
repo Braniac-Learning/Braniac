@@ -4,7 +4,7 @@ services:
     env: node
     region: oregon
     branch: main
-    plan: starter
+    plan: free
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     autoDeploy: true
@@ -17,10 +17,19 @@ services:
     env: node
     region: oregon
     branch: master
-    plan: starter
+    plan: free
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
+
+  - type: static
+    name: braniac-frontend
+    region: oregon
+    branch: main
+    plan: free
+    buildCommand: echo "No build required"
+    staticPublishPath: frontend
+    autoDeploy: true
