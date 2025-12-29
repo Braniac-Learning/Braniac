@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: braniac-backend
+    name: braniac-backend-main
     env: node
     region: oregon
     branch: main
@@ -11,4 +11,16 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-        sync: false
+
+  - type: web
+    name: braniac-backend-master
+    env: node
+    region: oregon
+    branch: master
+    plan: starter
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
