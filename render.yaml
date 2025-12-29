@@ -4,7 +4,7 @@ services:
     runtime: node
     region: oregon
     branch: main
-    plan: free
+    plan: starter
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     autoDeploy: true
@@ -17,7 +17,7 @@ services:
     runtime: node
     region: oregon
     branch: master
-    plan: free
+    plan: starter
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     autoDeploy: true
@@ -29,7 +29,7 @@ services:
     type: web
     runtime: static
     branch: main
-    plan: free
+    plan: starter
     buildCommand: echo "No build required"
     staticPublishPath: frontend
     autoDeploy: true
