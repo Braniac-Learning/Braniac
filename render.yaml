@@ -1,10 +1,10 @@
 services:
   - type: web
     name: braniac-backend-main
-    runtime: node
+    env: node
     region: oregon
     branch: main
-    plan: starter
+    plan: free
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     autoDeploy: true
@@ -14,10 +14,10 @@ services:
 
   - type: web
     name: braniac-backend-master
-    runtime: node
+    env: node
     region: oregon
     branch: master
-    plan: starter
+    plan: free
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     autoDeploy: true
@@ -29,7 +29,7 @@ services:
     type: web
     runtime: static
     branch: main
-    plan: starter
+    plan: free
     buildCommand: echo "No build required"
     staticPublishPath: frontend
     autoDeploy: true

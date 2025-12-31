@@ -124,34 +124,82 @@ document.addEventListener('DOMContentLoaded', function() {
     // REGISTER FORM SUBMISSION (calls backend)
     // -----------------------------
     const registerForm = document.getElementById('registerForm');
+    const registerError = document.getElementById('registerError');
+    const regUsername = document.getElementById('regUsername');
+    const regFirstName = document.getElementById('regFirstName');
+    const regPassword = document.getElementById('regPassword');
+    const regConfirmPassword = document.getElementById('regConfirmPassword');
+
+    function clearRegisterError() {
+      if (registerError) {
+        registerError.style.display = 'none';
+        registerError.textContent = '';
+      }
+      if (regUsername) regUsername.classList.remove('error');
+      if (regFirstName) regFirstName.classList.remove('error');
+      if (regPassword) regPassword.classList.remove('error');
+      if (regConfirmPassword) regConfirmPassword.classList.remove('error');
+    }
+
+    if (regUsername) regUsername.addEventListener('input', clearRegisterError);
+    if (regFirstName) regFirstName.addEventListener('input', clearRegisterError);
+    if (regPassword) regPassword.addEventListener('input', clearRegisterError);
+    if (regConfirmPassword) regConfirmPassword.addEventListener('input', clearRegisterError);
+
     if (registerForm) {
       registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        clearRegisterError();
 
         if (!registerForm.checkValidity()) {
           registerForm.reportValidity();
           return;
         }
 
-        const usernameInput = registerForm.querySelector('input[placeholder="Username"]');
-        const firstNameInput = registerForm.querySelector('input[placeholder="First Name"]');
-        const passwordInput = registerForm.querySelector('input[placeholder="Password"]');
-        const confirmInput = registerForm.querySelector('input[placeholder="Confirm Password"]');
-
-        const username = usernameInput ? usernameInput.value.trim() : '';
-        const firstName = firstNameInput ? firstNameInput.value.trim() : '';
-        const password = passwordInput ? passwordInput.value : '';
-        const confirmPassword = confirmInput ? confirmInput.value : '';
+        const username = regUsername ? regUsername.value.trim() : '';
+        const firstName = regFirstName ? regFirstName.value.trim() : '';
+        const password = regPassword ? regPassword.value : '';
+        const confirmPassword = regConfirmPassword ? regConfirmPassword.value : '';
 
         // Client-side validation to match server rules
         const usernameOk = /^[A-Za-z0-9_-]{3,30}$/.test(username);
         const firstNameOk = /^[A-Za-z\s-]{1,50}$/.test(firstName);
         const passwordOk = password.length >= 8 && !/\s/.test(password);
 
-        if (!usernameOk) return alert('Invalid username. Use letters, numbers, hyphens or underscores (3-30 chars), no spaces.');
-        if (!firstNameOk) return alert('Invalid first name. Use letters, spaces, and hyphens only.');
-        if (!passwordOk) return alert('Invalid password. Minimum 8 characters, no spaces.');
-        if (password !== confirmPassword) return alert('Passwords do not match');
+        if (!usernameOk) {
+          if (registerError) {
+            registerError.textContent = 'Invalid username. Use letters, numbers, hyphens or underscores (3-30 chars), no spaces.';
+            registerError.style.display = 'block';
+          }
+          if (regUsername) regUsername.classList.add('error');
+          return;
+        }
+        if (!firstNameOk) {
+          if (registerError) {
+            registerError.textContent = 'Invalid first name. Use letters, spaces, and hyphens only.';
+            registerError.style.display = 'block';
+          }
+          if (regFirstName) regFirstName.classList.add('error');
+          return;
+        }
+        if (!passwordOk) {
+          if (registerError) {
+            registerError.textContent = 'Invalid password. Minimum 8 characters, no spaces.';
+            registerError.style.display = 'block';
+          }
+          if (regPassword) regPassword.classList.add('error');
+          return;
+        }
+        if (password !== confirmPassword) {
+          if (registerError) {
+            registerError.textContent = 'Passwords do not match';
+            registerError.style.display = 'block';
+          }
+          if (regPassword) regPassword.classList.add('error');
+          if (regConfirmPassword) regConfirmPassword.classList.add('error');
+          return;
+        }
 
         try {
           const resp = await fetch('http://localhost:3001/api/auth/register', {
@@ -163,15 +211,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
           const data = await resp.json();
           if (!resp.ok) {
-            return alert(data.error || 'Registration failed');
+            if (registerError) {
+              registerError.textContent = data.error || 'Registration failed';
+              registerError.style.display = 'block';
+            }
+            return;
           }
 
           // Save first name locally and redirect to onboarding
           if (data.user && data.user.firstName) localStorage.setItem('braniacFirstName', data.user.firstName);
+          clearRegisterError();
           window.location.href = 'onboarding.html';
         } catch (err) {
           console.error('Register error:', err);
-          alert('Registration failed. Check console for details.');
+          if (registerError) {
+            registerError.textContent = 'Network error — please try again.';
+            registerError.style.display = 'block';
+          }
         }
       });
     }

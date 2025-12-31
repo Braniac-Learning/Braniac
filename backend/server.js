@@ -431,11 +431,42 @@ app.get('/health', (req, res) => {
 });
 
 // -----------------------------
-// Simple Authentication (in-memory, development only)
+// Database and Authentication Setup
 // -----------------------------
 const crypto = require('crypto');
-const users = new Map(); // username -> { username, firstName, passwordHash, salt, createdAt }
-const sessions = new Map(); // token -> username
+const { MongoClient } = require('mongodb');
+
+// MongoDB connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const DB_NAME = process.env.DB_NAME || 'braniac_db';
+let db;
+let usersCollection;
+let sessionsCollection;
+
+// Connect to MongoDB
+async function connectDB() {
+    try {
+        const client = new MongoClient(MONGODB_URI);
+        await client.connect();
+        db = client.db(DB_NAME);
+        usersCollection = db.collection('users');
+        sessionsCollection = db.collection('sessions');
+        
+        // Create indexes for faster lookups
+        await usersCollection.createIndex({ username: 1 }, { unique: true });
+        await sessionsCollection.createIndex({ token: 1 }, { unique: true });
+        await sessionsCollection.createIndex({ createdAt: 1 }, { expireAfterSeconds: 604800 }); // 7 days
+        
+        console.log('✅ Connected to MongoDB successfully');
+    } catch (err) {
+        console.error('❌ MongoDB connection error:', err);
+        console.log('⚠️  Running without database - auth will not persist');
+    }
+}
+
+// Start DB connection
+connectDB();
+
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
 function validateUsername(username) {
@@ -461,8 +492,39 @@ function createSessionToken(username) {
     const token = crypto.createHmac('sha256', SESSION_SECRET)
         .update(username + ':' + Date.now() + ':' + crypto.randomBytes(16).toString('hex'))
         .digest('hex');
-    sessions.set(token, { username, createdAt: Date.now() });
     return token;
+}
+
+async function saveSession(token, username) {
+    if (!sessionsCollection) return;
+    try {
+        await sessionsCollection.insertOne({
+            token,
+            username,
+            createdAt: new Date()
+        });
+    } catch (err) {
+        console.error('Error saving session:', err);
+    }
+}
+
+async function getSession(token) {
+    if (!sessionsCollection) return null;
+    try {
+        return await sessionsCollection.findOne({ token });
+    } catch (err) {
+        console.error('Error getting session:', err);
+        return null;
+    }
+}
+
+async function deleteSession(token) {
+    if (!sessionsCollection) return;
+    try {
+        await sessionsCollection.deleteOne({ token });
+    } catch (err) {
+        console.error('Error deleting session:', err);
+    }
 }
 
 // Register route
@@ -491,17 +553,33 @@ app.post('/api/auth/register', async (req, res) => {
         }
 
         const normalized = username.toLowerCase();
-        if (users.has(normalized)) {
-            return res.status(409).json({ error: 'Username already taken' });
+        
+        // Check if user exists in database
+        if (usersCollection) {
+            const existingUser = await usersCollection.findOne({ username: normalized });
+            if (existingUser) {
+                return res.status(409).json({ error: 'Username already taken' });
+            }
         }
 
         const salt = crypto.randomBytes(16).toString('hex');
         const passwordHash = hashPassword(password, salt);
 
-        const user = { username: normalized, firstName: firstName.trim(), passwordHash, salt, createdAt: Date.now() };
-        users.set(normalized, user);
+        const user = { 
+            username: normalized, 
+            firstName: firstName.trim(), 
+            passwordHash, 
+            salt, 
+            createdAt: new Date() 
+        };
+        
+        // Save user to database
+        if (usersCollection) {
+            await usersCollection.insertOne(user);
+        }
 
         const token = createSessionToken(normalized);
+        await saveSession(token, normalized);
 
         // Set HttpOnly cookie
         res.cookie('session', token, { httpOnly: true, sameSite: 'lax' });
@@ -523,7 +601,13 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         const normalized = username.toLowerCase();
-        const user = users.get(normalized);
+        
+        // Find user in database
+        let user = null;
+        if (usersCollection) {
+            user = await usersCollection.findOne({ username: normalized });
+        }
+        
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
@@ -534,6 +618,7 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         const token = createSessionToken(normalized);
+        await saveSession(token, normalized);
         res.cookie('session', token, { httpOnly: true, sameSite: 'lax' });
 
         return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
@@ -544,14 +629,38 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Simple middleware to get current user from session cookie or header
-function getUserFromRequest(req) {
+async function getUserFromRequest(req) {
     const token = req.cookies && req.cookies.session || req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '');
     if (!token) return null;
-    const s = sessions.get(token);
-    if (!s) return null;
-    const user = users.get(s.username);
-    return user || null;
+    
+    const session = await getSession(token);
+    if (!session) return null;
+    
+    if (usersCollection) {
+        const user = await usersCollection.findOne({ username: session.username });
+        return user || null;
+    }
+    return null;
 }
+
+// Logout route
+app.post('/api/auth/logout', async (req, res) => {
+    const token = req.cookies && req.cookies.session;
+    if (token) {
+        await deleteSession(token);
+    }
+    res.clearCookie('session');
+    return res.json({ ok: true, message: 'Logged out successfully' });
+});
+
+// Get current user route (check if logged in)
+app.get('/api/auth/me', async (req, res) => {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+    return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
+});
 
 // Favicon route
 app.get('/favicon.ico', (req, res) => {
