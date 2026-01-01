@@ -1,0 +1,239 @@
+body {
+  margin: 0;
+  background: #F0F0F0;
+  font-family: 'Cascadia Code', monospace;
+  color: #0F0F0F;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #0f0f0f;
+  color: #f0f0f0;
+}
+
+.logo-img {
+  height: 49px;
+  width: auto;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-item {
+  position: relative;
+  text-transform: uppercase;
+  color: #F0F0F0;
+  text-decoration: none;
+}
+
+.nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: #FE77AA;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.nav-item:hover {
+  color: #FE77AA;
+}
+
+.nav-item:hover::after {
+  width: 100%;
+}
+
+/* ===============================
+   SELECTED STATE (COLOR ONLY)
+================================ */
+
+.nav-item.active {
+  color: #FE77AA;
+}
+
+/* IMPORTANT: prevent underline from sticking */
+.nav-item.active::after {
+  width: 0;
+}
+
+.nav-item.active {
+  text-shadow: 0 0 8px rgba(254, 119, 170, 0.35);
+}
+
+.sign-in-btn {
+  background: #F0F0F0;
+  color: #0F0F0F;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  font-weight: bold;
+  font-family: 'Cascadia Code', monospace;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sign-in-btn:hover {
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+  color: #F0F0F0;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(238, 36, 124, 0.3);
+}
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+h1 {
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Toggle (same pattern as Achievements) */
+.toggle {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.toggle-btn {
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: 'Cascadia Code', monospace;
+  background: #0F0F0F;
+  color: #F0F0F0;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+}
+
+/* Score lists */
+.score-list {
+  display: none;
+}
+
+.score-list.active {
+  display: block;
+}
+
+/* Score cards */
+.score-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.score-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.score-info strong {
+  font-size: 1.1rem;
+  color: #0F0F0F;
+}
+
+/* Snake Progress Ring Container */
+.score-ring-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* Start from the top */
+}
+
+/* The path the snake follows */
+.ring-track {
+  fill: transparent;
+  stroke: #f0f0f0;
+  stroke-width: 8;
+}
+
+/* The Snake itself */
+.ring-snake {
+  fill: transparent;
+  stroke: url(#snakeGradient); /* Defined in SVG or use color */
+  stroke: #EE247C; 
+  stroke-width: 8;
+  stroke-linecap: round; /* Makes it look like a snake head/tail */
+  
+  /* Circumference is ~251.3 for r=40 */
+  stroke-dasharray: 251.3;
+  stroke-dashoffset: calc(251.3 - (var(--percent) * 251.3 / 100));
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+/* Score text in the center */
+.score-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-family: 'Cascadia Code', monospace;
+}
+
+.score-text .correct {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #EE247C;
+}
+
+.score-text .divider {
+  font-size: 0.6rem;
+  opacity: 0.3;
+  margin: 2px 0;
+}
+
+.score-text .total {
+  font-size: 0.8rem;
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+/* Visual Flare: Pulse if 100% */
+.ring-snake[style*="--percent: 100"] {
+  filter: drop-shadow(0 0 5px #FE77AA);
+  animation: snakePulse 2s infinite;
+}
+
+@keyframes snakePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.type {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: #0F0F0F;
+  color: #F0F0F0;
+}

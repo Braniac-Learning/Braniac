@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BRANIAC - Learn anything, outsmart everyone. AI-crafted quizzes for smarter learning." />
+  <title>BRANIAC LEARNING</title>
+<script>
+  (function () {
+    const session = JSON.parse(localStorage.getItem('braniacSession'));
+    const html = document.documentElement;
+    
+    if (session) {
+      // Inject the class before the browser even paints the first pixel
+      html.classList.add(session.type === 'guest' ? 'auth-guest' : 'auth-user');
+    } else {
+      html.classList.add('auth-none');
+    }
+  })();
+</script>
+  <link rel="stylesheet" href="global.css">
+  <link rel="stylesheet" href="achievements.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:wght@200;300;400;500;600;700&family=Orbitron:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" />
+  <!-- Standard favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+
+<!-- Apple Touch Icon for iOS -->
+<link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+
+<!-- Android / Chrome icons -->
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/favicon/android-chrome-512x512.png">
+
+<!-- Manifest for mobile and PWA support -->
+<link rel="manifest" href="assets/favicon/site.webmanifest">
+
+ <!-- 🎨 Theme color for browser UI -->
+<meta name="theme-color" content="#0F0F0F">
+
+<!-- HTML Meta Tags -->
+<title>BRANIAC — High Energy. Zero Boredom. All Brain.</title>
+<meta name="description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+ 
+<!-- Open Graph Meta Tags -->
+<meta property="og:url" content="https://braniaclearning.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BRANIAC — High Energy. Zero Boredom. All Brain.">
+<meta property="og:description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+<meta property="og:image" content="https://braniaclearning.netlify.app/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter Meta Tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta property="twitter:domain" content="braniaclearning.netlify.app">
+<meta property="twitter:url" content="https://braniaclearning.netlify.app/">
+<meta name="twitter:title" content="BRANIAC — High Energy. Zero Boredom. All Brain.">
+<meta name="twitter:description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+<meta name="twitter:image" content="https://braniaclearning.netlify.app/images/og-image.png">
+</head>
+<body>
+
+ <!-- Navbar -->
+<nav class="navbar">
+  <div class="logo">
+    <img
+      src="assets/BRANIAC logos/braniac-logo.svg"
+      alt="Braniac Logo"
+      class="logo-img"
+    />
+  </div>
+
+  <div class="nav-links">
+    <a href="/backend/learn.html" class="nav-item">LEARN</a>
+    <a href="achievements.html" class="nav-item active">ACHIEVEMENTS</a>
+    <a href="scores.html" class="nav-item">SCORES</a>
+  </div>
+
+  <!-- SIGN IN (shown before session) -->
+   <div class="nav-auth">
+<button class="sign-in-btn" id="openSignIn">SIGN IN</button>
+
+  <!-- PROFILE ICON (shown after session) -->
+  <div class="nav-profile hidden" id="navProfile">
+    <button class="profile-trigger" aria-label="Profile">
+      <img
+        src="assets/icons/guest.svg"
+        alt="Profile picture"
+        id="navAvatar"
+      />
+    </button>
+
+    <div class="profile-menu" id="profileMenu">
+
+  <!-- Signed-in users -->
+  <button class="profile-action hidden" id="changePfpBtn">
+    <img src="assets/icons/settings.svg" alt="" class="profile-action-icon">
+    Edit your profile
+  </button>
+
+  <!-- Guest users -->
+  <button class="profile-action hidden" id="guestLoginBtn">
+    <img src="assets/icons/in.svg" alt="" class="profile-action-icon">
+    Sign in
+  </button>
+
+  <!-- Shared -->
+  <button class="profile-action" id="logoutBtn">
+    <img src="assets/icons/out.svg" alt="" class="profile-action-icon">
+    Sign out
+  </button>
+</div>
+</div>
+
+</nav>
+
+<main class="page">
+
+  <div class="toggle">
+    <button class="toggle-btn active" data-target="obtained">OBTAINED</button>
+    <button class="toggle-btn" data-target="unobtained">UNOBTAINED</button>
+  </div>
+
+  <div id="noDataView" class="no-data-container">
+  <img src="assets/icons/no-data.svg" alt="No progress yet" class="no-data-icon">
+  <h3>ZERO BRAIN ACTIVITY DETECTED</h3>
+  <p>You haven't obtained any achievements yet.</p>
+</div>
+
+  <!-- OBTAINED -->
+  <section class="achievement-list" id="obtained">
+    <div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/first-steps.svg" alt="First Steps">
+        </div>
+    <div class="card-text">
+      <strong>First Steps</strong>
+      <span>Complete your first quiz</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+
+  <div class="card-details">
+    <p><strong>Category:</strong> Getting Started</p>
+    <p><strong>Progress:</strong> 1 / 1</p>
+  </div>
+</div>
+
+ <div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/curious-mind.svg" alt="Curious Mind">
+        </div>
+    <div class="card-text">
+      <strong>Curious Mind</strong>
+      <span>Explore 3 different subjects</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+
+  <div class="card-details">
+    <p><strong>Category:</strong> Exploration</p>
+    <p><strong>Progress:</strong> 3 / 3</p>
+  </div>
+</div>
+
+ <div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/warm-up.svg" alt="Warm-Up">
+        </div>
+    <div class="card-text">
+      <strong>Warm-Up</strong>
+      <span>Answer 10 questions total</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+
+  <div class="card-details">
+    <p><strong>Category:</strong> Activity</p>
+    <p><strong>Progress:</strong> 10 / 10</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/logic-learner.svg" alt="Logic Learner">
+        </div>
+    <div class="card-text">
+      <strong>Logic Learner</strong>
+      <span>Complete 5 logic quizzes</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+
+  <div class="card-details">
+    <p><strong>Category:</strong> Learning Style</p>
+    <p><strong>Progress:</strong> 5 / 5</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/consistent-starter.svg" alt="Consistent Starter">
+        </div>
+    <div class="card-text">
+      <strong>Consistent Starter</strong>
+      <span>Learn on 3 different days</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+
+  <div class="card-details">
+    <p><strong>Category:</strong> Consistency</p>
+    <p><strong>Progress:</strong> 3 / 3</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/exam-ready.svg" alt="Exam Ready">
+        </div>
+    <div class="card-text">
+      <strong>Exam Ready</strong>
+      <span>Pass an exam with 80%+</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+
+  <div class="card-details">
+    <p><strong>Category:</strong> Activity</p>
+    <p><strong>Progress:</strong> 1 / 1</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/knowledge-grinder.svg" alt="Knowledge Grinder">
+        </div>
+    <div class="card-text">
+      <strong>Knowledge Grinder</strong>
+      <span>Complete 50 quizzes</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+
+  <div class="card-details">
+    <p><strong>Category:</strong> Activity</p>
+    <p><strong>Progress:</strong> 50 / 50</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/logic-master.svg" alt="Logic Master">
+        </div>
+    <div class="card-text">
+      <strong>Logic Master</strong>
+      <span>Complete 25 logic quizzes</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Category:</strong> Learning Style</p>
+    <p><strong>Progress:</strong> 25 / 25</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/perfect-streak.svg" alt="Perfect Streak">
+        </div>
+    <div class="card-text">
+      <strong>Perfect Streak</strong>
+      <span>Get 15 answers correct in a row</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Category:</strong> Accuracy</p>
+    <p><strong>Progress:</strong> 15 / 15</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/subject-specialist.svg" alt="Subject Specialist">
+        </div>
+    <div class="card-text">
+      <strong>Subject Specialist</strong>
+      <span>Master one subject completely</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Category:</strong> Mastery</p>
+    <p><strong>Progress:</strong> 1 / 1</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/exam-ace.svg" alt="Exam Ace">
+        </div>
+    <div class="card-text">
+      <strong>Exam Ace</strong>
+      <span>Score 95%+ on a full exam</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Category:</strong> Exams</p>
+    <p><strong>Progress:</strong> 1 / 1</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/iron-mind.svg" alt="Iron Mind">
+        </div>
+    <div class="card-text">
+      <strong>Iron Mind</strong>
+      <span>Study for 7 consecutive days</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Category:</strong> Consistency</p>
+    <p><strong>Progress:</strong> 7 / 7</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/knowledge-architect.svg" alt="Knowledge Architect">
+        </div>
+    <div class="card-text">
+      <strong>Knowledge Architect</strong>
+      <span>Complete 100 quizzes</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Category:</strong> Completion</p>
+    <p><strong>Progress:</strong> 100%</p>
+  </div>
+</div>
+
+<div class="achievement-card obtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/braniac-elite.svg" alt="Braniac Elite">
+        </div>
+    <div class="card-text">
+      <strong>Braniac Elite</strong>
+      <span>Unlock all achievements</span>
+    </div>
+    <span class="status">✓</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Category:</strong> Prestige</p>
+    <p><strong>Progress:</strong> 13 / 13</p>
+  </div>
+</div>
+  </section>
+
+  <!-- UNOBTAINED -->
+  <section class="achievement-list" id="unobtained">
+   <div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/first-steps.svg" alt="First Steps">
+        </div>
+    <div class="card-text">
+      <strong>First Steps</strong>
+      <span>Complete your first quiz</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 0 / 1</p>
+    <p><strong>Hint:</strong> Try any quiz to get started</p>
+  </div>
+</div>
+
+   <div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/curious-mind.svg" alt="Curious Mind">
+        </div>
+    <div class="card-text">
+      <strong>Curious Mind</strong>
+      <span>Explore 3 different subjects</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 1 / 3</p>
+    <p><strong>Hint:</strong> Try learning something new</p>
+  </div>
+</div>
+
+  <div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/warm-up.svg" alt="Warm-Up">
+        </div>
+    <div class="card-text">
+      <strong>Warm-Up</strong>
+      <span>Answer 10 questions total</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 4 / 10</p>
+    <p><strong>Hint:</strong> Keep answering questions</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/logic-learner.svg" alt="Logic Learner">
+        </div>
+    <div class="card-text">
+      <strong>Logic Learner</strong>
+      <span>Complete 5 logic quizzes</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 2 / 5</p>
+    <p><strong>Hint:</strong> Try logic-based quizzes</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/consistent-starter.svg" alt="Consistent Starter">
+        </div>
+    <div class="card-text">
+      <strong>Consistent Starter</strong>
+      <span>Learn on 3 different days</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 1 / 3</p>
+    <p><strong>Hint:</strong> Come back tomorrow</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/exam-ready.svg" alt="Exam Ready">
+        </div>
+    <div class="card-text">
+      <strong>Exam Ready</strong>
+      <span>Pass an exam with 80%+</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 0 / 1</p>
+    <p><strong>Hint:</strong> Attempt a full exam</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/knowledge-grinder.svg" alt="Knowledge Grinder">
+        </div>
+    <div class="card-text">
+      <strong>Knowledge Grinder</strong>
+      <span>Complete 50 quizzes</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 12 / 50</p>
+    <p><strong>Hint:</strong> Keep grinding quizzes</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/logic-master.svg" alt="Logic Master">
+        </div>
+    <div class="card-text">
+      <strong>Logic Master</strong>
+      <span>Complete 25 logic quizzes</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 11 / 25</p>
+    <p><strong>Hint:</strong> Logic quizzes reward precision</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/perfect-streak.svg" alt="Perfect Streak">
+        </div>
+    <div class="card-text">
+      <strong>Perfect Streak</strong>
+      <span>Get 15 answers correct in a row</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 7 / 15</p>
+    <p><strong>Hint:</strong> Slow down and double-check answers</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/subject-specialist.svg" alt="Subject Specialist">
+        </div>
+    <div class="card-text">
+      <strong>Subject Specialist</strong>
+      <span>Master one subject completely</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 0 / 1</p>
+    <p><strong>Hint:</strong> Score 100% on a quiz</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/exam-ace.svg" alt="Exam Ace">
+        </div>
+    <div class="card-text">
+      <strong>Exam Ace</strong>
+      <span>Score 95%+ on a full exam</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 0 / 1</p>
+    <p><strong>Hint:</strong> Near-perfect accuracy required</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/iron-mind.svg" alt="Iron Mind">
+        </div>
+    <div class="card-text">
+      <strong>Iron Mind</strong>
+      <span>Study for 7 consecutive days</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 3 / 7</p>
+    <p><strong>Hint:</strong> Don’t break your streak</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/knowledge-architect.svg" alt="Knowledge Architect">
+        </div>
+    <div class="card-text">
+      <strong>Knowledge Architect</strong>
+      <span>Complete 100 quizzes</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 12 / 100</p>
+    <p><strong>Hint:</strong> Only quizzes you score 80%+ on count</p>
+  </div>
+</div>
+
+<div class="achievement-card unobtained">
+  <div class="card-main">
+    <div class="badge-icon">
+          <img src="assets/icons/achievements/braniac-elite.svg" alt="Braniac Elite">
+        </div>
+    <div class="card-text">
+      <strong>Braniac Elite</strong>
+      <span>Unlock all achievements</span>
+    </div>
+    <span class="status">◌</span>
+  </div>
+  <div class="card-details">
+    <p><strong>Progress:</strong> 8 / 13</p>
+    <p><strong>Hint:</strong> Complete all other achievements</p>
+  </div>
+</div>
+  </section>
+</main>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-container">
+
+    <!-- Close Button -->
+    <button class="close-modal" id="closeModal">&times;</button>
+
+    <!-- Logo -->
+    <div class="auth-logo-container">
+      <img src="assets/BRANIAC logos/braniac-logo(2).svg" alt="Braniac Logo" class="auth-logo">
+    </div>
+
+    <!-- Sign In Panel -->
+<div class="auth-panel" id="signInPanel">
+  <h2 class="auth-title">SIGN IN</h2>
+  <p class="auth-subtitle">Access your scores and achievements</p>
+
+  <form class="auth-form">
+    <input type="text" placeholder="Username" required>
+
+    <div class="password-wrapper">
+      <input type="password" placeholder="Password" required>
+      <button type="button" class="toggle-password" aria-label="Show/hide password">
+        <img src="assets/icons/eye.svg" alt="Toggle Password Visibility">
+      </button>
+    </div>
+
+    <button type="submit" class="auth-btn">SIGN IN</button>
+  </form>
+
+  <p class="switch-text">
+    Don't have an account? <a href="#" id="switchToRegister">Register</a>
+  </p>
+  <button class="guest-btn" id="guestBtn">Continue as Guest</button>
+</div>
+
+<!-- Register Panel -->
+<div class="auth-panel hidden" id="registerPanel">
+  <h2 class="auth-title">REGISTER</h2>
+  <p class="auth-subtitle">Create your account to track your progress</p>
+
+  <form class="auth-form" id="registerForm">
+    <input type="text" placeholder="Username" required>
+    <input type="text" placeholder="First Name" required>
+
+    <div class="password-wrapper">
+      <input type="password" placeholder="Password" required>
+      <button type="button" class="toggle-password" aria-label="Show/hide password">
+        <img src="assets/icons/eye.svg" alt="Toggle Password Visibility">
+      </button>
+    </div>
+
+    <div class="password-wrapper">
+      <input type="password" placeholder="Confirm Password" required>
+      <button type="button" class="toggle-password" aria-label="Show/hide password">
+        <img src="assets/icons/eye.svg" alt="Toggle Password Visibility">
+      </button>
+    </div>
+
+    <button class="auth-btn" type="submit" id="registerBtn">REGISTER</button>
+  </form>
+
+  <p class="switch-text">
+    Already have an account? <a href="#" id="switchToSignIn">Sign In</a>
+  </p>
+</div> </div> </div> <script src="nav-session.js" defer></script>
+<script src="achievements.js"></script>
+
+</body>
+</html>
