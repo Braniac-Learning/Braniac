@@ -1,0 +1,277 @@
+/* ===============================
+   BASE
+================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #F0F0F0; /* BRANIAC white */
+  font-family: 'Cascadia Code', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===============================
+   PAGE WRAPPER
+================================ */
+
+.profile-page-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 1rem;
+}
+
+/* ===============================
+   CARD
+================================ */
+
+.profile-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 1.75rem 1.5rem 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ===============================
+   HEADER (INSIDE CARD)
+================================ */
+
+.profile-header {
+  text-align: center;
+}
+
+.profile-header .auth-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  background: #EE247C;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+/* ===============================
+   PROFILE PICTURE
+================================ */
+
+.edit-pfp-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.pfp-wrapper {
+  position: relative;
+  width: 110px;
+  height: 110px;
+}
+
+.profile-icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0F0F0F;
+  display: block;
+}
+
+/* Upload badge — solid, no gradient */
+.pfp-edit-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #EE247C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  z-index: 3; /* Sits above the circle */
+}
+
+.pfp-edit-badge img {
+  width: 21px;
+  height: 21px;
+}
+
+.pfp-edit-badge:hover {
+  transform: scale(1.1);
+}
+
+/* ===============================
+   FORM (AUTH-CONSISTENT)
+================================ */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* Label styling */
+.input-group label {
+  color: #0F0F0F;
+  font-weight: bold;
+}
+
+/* Inputs EXACTLY match auth */
+.auth-form input,
+.auth-form textarea {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #CCCCCC;
+  background: #0F0F0F;
+  color: #F0F0F0;
+  font-family: 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  resize: none;
+  /* Enable scrolling without visible bar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Hide scrollbar for Chrome/Safari/Brave */
+.auth-form textarea::-webkit-scrollbar,
+.auth-form input::-webkit-scrollbar {
+  display: none;
+}
+
+input::placeholder {
+    color: #CCCCCC;
+}
+
+.auth-form textarea {
+  min-height: 90px;
+  overflow-y: auto;
+}
+
+.auth-form input:focus,
+.auth-form textarea:focus {
+  border-color: #FE77AA;
+  outline: none;
+}
+
+#charCount {
+  font-size: 0.7rem;
+  color: #555;
+  align-self: flex-end;
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+
+.profile-button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.profile-button-group button {
+  flex: 1;
+  padding: 0.75rem 0;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Cascadia Code', monospace;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Secondary */
+.guest-btn {
+  background: #0F0F0F;
+  color: #F0F0F0;
+}
+
+.guest-btn:hover {
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+}
+
+/* Primary */
+.auth-btn {
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+  color: #F0F0F0;
+}
+
+.auth-btn:hover {
+  background: #0F0F0F;
+}
+
+/* ===============================
+   UPLOAD OVERLAY
+================================ */
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.auth-overlay.active {
+  display: flex;
+}
+
+/* ===============================
+   UPLOAD CHOICES
+================================ */
+
+.upload-choices-container {
+  background: #F0F0F0;
+  border-radius: 18px;
+  padding: 1.75rem 1.5rem;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.choice-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Cascadia Code', monospace;
+  font-weight: bold;
+  cursor: pointer;
+  background: #0F0F0F;
+  color: #F0F0F0;
+  transition: all 0.2s ease;
+}
+
+.choice-item img {
+  width: 21px;
+  height: auto;
+}
+
+.choice-item:hover {
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+}

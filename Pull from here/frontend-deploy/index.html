@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BRANIAC - Learn anything, outsmart everyone. AI-crafted quizzes for smarter learning." />
+  <title>BRANIAC LEARNING</title>
+  <script>
+  (function () {
+    const session = JSON.parse(localStorage.getItem('braniacSession'));
+    const html = document.documentElement;
+    
+    if (session) {
+      // Inject the class before the browser even paints the first pixel
+      html.classList.add(session.type === 'guest' ? 'auth-guest' : 'auth-user');
+    } else {
+      html.classList.add('auth-none');
+    }
+  })();
+</script>
+  <link rel="stylesheet" href="global.css">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="lock.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:wght@200;300;400;500;600;700&family=Orbitron:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" />
+  <!-- Standard favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+
+<!-- Apple Touch Icon for iOS -->
+<link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+
+<!-- Android / Chrome icons -->
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/favicon/android-chrome-512x512.png">
+
+<!-- Manifest for mobile and PWA support -->
+<link rel="manifest" href="assets/favicon/site.webmanifest">
+
+ <!-- 🎨 Theme color for browser UI -->
+<meta name="theme-color" content="#0F0F0F">
+
+<!-- HTML Meta Tags -->
+<title>BRANIAC — High Energy. Zero Boredom. All Brain.</title>
+<meta name="description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+ 
+<!-- Open Graph Meta Tags -->
+<meta property="og:url" content="https://braniaclearning.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BRANIAC — High Energy. Zero Boredom. All Brain.">
+<meta property="og:description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+<meta property="og:image" content="https://i.postimg.cc/9MnmpY9g/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter Meta Tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta property="twitter:domain" content="braniaclearning.netlify.app">
+<meta property="twitter:url" content="https://braniaclearning.netlify.app/">
+<meta name="twitter:title" content="BRANIAC — High Energy. Zero Boredom. All Brain.">
+<meta name="twitter:description" content="Outsmart everyone with BRANIAC — the high-energy learning platform built for the next generation.">
+<meta name="twitter:image" content="https://i.postimg.cc/9MnmpY9g/og-image.png">
+
+<!-- Preload social hover icons for faster transitions -->
+<link rel="preload" href="/social media logos/instagram-pink.png" as="image" type="image/png" />
+<link rel="preload" href="/social media logos/x-pink.png" as="image" type="image/png" />
+<link rel="preload" href="/social media logos/tiktok-pink.png" as="image" type="image/png" />
+<link rel="preload" href="/social media logos/youtube-pink.png" as="image" type="image/png" />
+<link rel="preload" href="/social media logos/linkedin-pink.png" as="image" type="image/png" />
+</head>
+<body>
+  <!-- Navbar -->
+<nav class="navbar">
+  <div class="logo">
+    <img
+      src="assets/BRANIAC logos/braniac-logo.svg"
+      alt="Braniac Logo"
+      class="logo-img"
+    />
+  </div>
+
+  <div class="nav-links">
+    <a href="../backend/learn.html" class="nav-item gated">LEARN</a>
+    <a href="achievements.html" class="nav-item gated">ACHIEVEMENTS</a>
+    <a href="scores.html" class="nav-item gated">SCORES</a>
+  </div>
+
+  <!-- SIGN IN (shown before session) -->
+  <div class="nav-auth">
+  <button class="sign-in-btn" id="openSignIn">SIGN IN</button>
+
+  <!-- PROFILE ICON (shown after session) -->
+  <div class="nav-profile hidden" id="navProfile">
+  <button class="profile-trigger" aria-label="Profile">
+    <img src="assets/icons/guest.svg" alt="Profile picture" id="navAvatar" />
+  </button>
+
+  <div class="profile-menu" id="profileMenu">
+    <div id="userHeader" class="user-info-header hidden">
+      <img id="menuAvatar" src="assets/icons/guest.svg" alt="User Avatar" class="menu-large-avatar">
+      <h2 id="menuFirstName" class="user-name-display">USER</h2>
+    </div>
+
+    <button class="profile-action hidden" id="changePfpBtn">
+      <img src="assets/icons/settings.svg" alt="" class="profile-action-icon">
+      Edit your profile
+    </button>
+
+    <button class="profile-action hidden" id="guestLoginBtn">
+      <img src="assets/icons/in.svg" alt="" class="profile-action-icon">
+      Sign in
+    </button>
+
+    <button class="profile-action" id="logoutBtn">
+      <img src="assets/icons/out.svg" alt="" class="profile-action-icon">
+      Sign out
+    </button>
+  </div>
+</div>
+
+</nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1 class="hero-title"><span>BECOME</span> <span>A</span> <span class="gradient-text">BRANIAC.</span></h1>
+    <h2 class="hero-subtitle">LEARN ANYTHING. OUTSMART EVERYONE.</h2>
+    <p class="hero-desc">Think you’ve got what it takes?</p>
+    <button class="cta-btn gated" onclick="window.location.href='../backend/learn.html'">
+    FIND OUT NOW
+</button>
+  </section>
+
+  <!-- Trusted Section -->
+  <section class="trusted">
+    <h2 class="section-title">TRUSTED BY THE BEST</h2>
+    <p class="section-desc">Built with the standards that top schools and exam boards trust.</p>
+    <div class="trusted-logos">
+      <img src="assets/guarantee section logos/waec.png" alt="WAEC">
+      <img src="assets/guarantee section logos/neco.png" alt="NECO">
+      <img src="assets/guarantee section logos/jamb.png" alt="JAMB">
+      <img src="assets/guarantee section logos/britishcouncil.png" alt="BRITISH COUNCIL">
+      <img src="assets/guarantee section logos/cambridge.png" alt="Cambridge">
+      <img src="assets/guarantee section logos/sat.png" alt="SAT">
+      <img src="assets/guarantee section logos/igcse.png" alt="IGCSE">
+    </div>
+  </section>
+
+  <!-- How to Become a Braniac -->
+<section id="how" class="how">
+  <h2 class="section-title">HOW TO BECOME A BRANIAC</h2>
+  <div class="how-container">
+    <div class="how-step">
+      <div class="circle">1</div>
+      <h3>PICK YOUR TOPIC</h3>
+      <p>From scientific concepts to literary themes, we’ve got you covered.</p>
+    </div>
+    <div class="how-step">
+      <div class="circle">2</div>
+      <h3>WE BUILD THE CHALLENGE</h3>
+      <p>AI-crafted quizzes designed to stretch your brain, not your patience.</p>
+    </div>
+    <div class="how-step">
+      <div class="circle">3</div>
+      <h3>PLAY. LEARN. REPEAT.</h3>
+      <p>Every round makes you sharper and unstoppable.</p>
+    </div>
+  </div>
+</section>
+
+  <!-- Why Braniac is Different -->
+  <section id="why" class="why">
+    <h2 class="section-title">WHY BRANIAC IS DIFFERENT</h2>
+    <div class="why-grid">
+      <div class="why-card">
+<div class="why-icon">
+  <img src="assets/icons/brain-icon.png" alt="BRAIN Icon">
+</div>
+  <h3>SMARTER BY DOING</h3>
+  <p>You learn by doing, not by dragging through classes.</p>
+</div>
+      <div class="why-card">
+<div class="why-icon">
+  <img src="assets/icons/ai-icon.png" alt="AI Icon">
+</div>
+        <h3>AI THAT ADAPTS</h3>
+        <p>Each quiz evolves with your answers, keeping you on your toes.</p>
+      </div>
+      <div class="why-card">
+<div class="why-icon">
+  <div class="why-icon centered-fix">
+  <img src="assets/icons/cool-icon.png" alt="COOL Icon">
+  </div>
+</div>
+        <h3>BRAIN-POWERED FUN</h3>
+        <p>High energy, zero boredom, all brain.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      <h3>CONTACT & SUPPORT</h3>
+      <p><span class="footer-emphasis">Got ideas or need help? We're always listening — whether it's feedback, bugs, or just brilliant ideas.</span></p>
+      <a href="mailto:braniaclearning@gmail.com">suppot@braniac.com</a>
+    </div>
+    <div class="footer-right">
+      <h3>STAY IN TOUCH WITH THE COMMUNITY</h3>
+      <p><span class="footer-emphasis">Follow, share, and challenge fellow BRANIACs across the web.</span></p>
+      <div class="social-links">
+      <a href="https://instagram.com/braniaclearning" target="_blank"><img src="assets/social media logos/instagram.png" alt="Instagram"></a>
+      <a href="https://tiktok.com/@braniac.app" target="_blank"><img src="assets/social media logos/tiktok.png" alt="TikTok"></a>
+      <a href="https://x.com/wearebraniac" target="_blank"><img src="assets/social media logos/x.png" alt="X"></a>
+      <a href="https://youtube.com/@braniacofficial" target="_blank"><img src="assets/social media logos/youtube.png" alt="YouTube"></a>
+      <a href="https://linkedin.com/in/braniac-learning-29bb84390" target="_blank"><img src="assets/social media logos/linkedin.png" alt="LinkedIn"></a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="footer-bottom">© 2026 BRANIAC. Because smart doesn’t have to be boring.</div>
+
+  <div class="auth-overlay" id="authOverlay">
+  <div class="auth-container">
+
+    <!-- Close Button -->
+    <button class="close-modal" id="closeModal">&times;</button>
+
+    <!-- Logo -->
+    <div class="auth-logo-container">
+      <img src="assets/BRANIAC logos/braniac-logo(2).svg" alt="Braniac Logo" class="auth-logo">
+    </div>
+
+    <!-- Sign In Panel -->
+<div class="auth-panel" id="signInPanel">
+  <h2 class="auth-title">SIGN IN</h2>
+  <p class="auth-subtitle">Access your scores and achievements</p>
+
+  <form class="auth-form">
+    <input type="text" placeholder="Username" required>
+
+    <div class="password-wrapper">
+      <input type="password" placeholder="Password" required>
+      <button type="button" class="toggle-password" aria-label="Show/hide password">
+        <img src="assets/icons/eye.svg" alt="Toggle Password Visibility">
+      </button>
+    </div>
+
+    <button type="submit" class="auth-btn">SIGN IN</button>
+  </form>
+
+  <p class="switch-text">
+    Don't have an account? <a href="#" id="switchToRegister">Register</a>
+  </p>
+  <button class="guest-btn" id="guestBtn">Continue as Guest</button>
+</div>
+
+<!-- Register Panel -->
+<div class="auth-panel hidden" id="registerPanel">
+  <h2 class="auth-title">REGISTER</h2>
+  <p class="auth-subtitle">Create your account to track your progress</p>
+
+  <form class="auth-form" id="registerForm">
+    <input type="text" placeholder="Username" required>
+    <input type="text" placeholder="First Name" required>
+
+    <div class="password-wrapper">
+      <input type="password" placeholder="Password" required>
+      <button type="button" class="toggle-password" aria-label="Show/hide password">
+        <img src="assets/icons/eye.svg" alt="Toggle Password Visibility">
+      </button>
+    </div>
+
+    <div class="password-wrapper">
+      <input type="password" placeholder="Confirm Password" required>
+      <button type="button" class="toggle-password" aria-label="Show/hide password">
+        <img src="assets/icons/eye.svg" alt="Toggle Password Visibility">
+      </button>
+    </div>
+
+    <button class="auth-btn" type="submit" id="registerBtn">REGISTER</button>
+  </form>
+
+  <p class="switch-text">
+    Already have an account? <a href="#" id="switchToSignIn">Sign In</a>
+  </p>
+  </div> </div> </div> <script src="nav-session.js" defer></script>
+  <script src="script.js" defer></script>
+  <script src="lock.js"></script>
+
+  <div id="authNotice" class="auth-notice">
+  Please sign in, register, or continue as guest to proceed.
+</div>
+
+<div id="guestNoticeOverlay" class="modal-overlay hidden">
+  <div class="notice-card">
+    
+    <h1 class="auth-title">WARNING</h1>
+    <p class="notice-text">
+      Guest data will be cleared after you sign out or close the tab
+    </p>
+
+    <div class="notice-actions">
+      <button id="cancelGuest" class="rtn-btn">RETURN</button>
+      <button id="confirmGuest" class="prcd-btn">PROCEED</button>
+    </div>
+
+    <label class="checkbox-container">
+      <input type="checkbox" id="dontShowGuestNotice">
+      <span class="checkmark"></span>
+      <span class="label-text">Don't show me this warning again</span>
+    </label>
+  </div>
+</div>
+
+</body>
+</html>

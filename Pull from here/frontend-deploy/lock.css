@@ -1,0 +1,12 @@
+/* Prevent dragging and highlighting of images/icons */
+img, i, svg, a {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    
+    /* Prevents the blue highlight box on mobile/desktop */
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}

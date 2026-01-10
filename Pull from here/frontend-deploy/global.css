@@ -1,0 +1,567 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Utility */
+.hidden {
+  display: none !important;
+}
+
+/* INSTANT VISIBILITY LOGIC */
+
+/* If we know the user is logged in via the HTML class, show profile immediately */
+html.auth-user #navProfile,
+html.auth-guest #navProfile {
+    display: inline-flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* If we know they are logged in, hide the sign-in button immediately */
+html.auth-user .sign-in-btn,
+html.auth-guest .sign-in-btn {
+    display: none !important;
+}
+
+/* Profile icon */
+.nav-profile {
+  position: relative;
+}
+
+.profile-trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.profile-trigger img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-menu::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 13px; /* aligns with profile icon */
+  width: 0;
+  height: 0;
+
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #1A1A1A;
+
+  /* subtle shadow for the triangle */
+  filter: drop-shadow(0 -1px 1px rgba(0, 0, 0, 0.25));
+
+  backdrop-filter: blur(6px);
+}
+
+/* Dropdown */
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: 119%;
+  background: #1A1A1A;
+  border-radius: 14px;
+  padding: 0.5rem;
+  min-width: 200px;
+  display: none;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 100;
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    0 2px 6px rgba(255, 255, 255, 0.04);
+  
+  backdrop-filter: blur(6px);
+}
+
+.nav-profile.show .profile-menu {
+  display: flex;
+}
+
+.profile-action {
+  display: flex;         /* Added */
+  align-items: center;    /* Added */
+  gap: 12px;             /* Added: consistent spacing between icon and text */
+  background: none;
+  border: none;
+  color: #F0F0F0;        /* Fixed: Changed from #0f0f0f so you can see the text */
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Cascadia Code', monospace;
+  border-radius: 8px;
+}
+
+.profile-action-icon {
+  width: 14px;           /* Slightly adjusted size */
+  height: auto;
+  flex-shrink: 0;
+  /* REMOVE transform: translateY(1.6px); */
+}
+
+.profile-action:hover {
+  background: #808080;
+}
+
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+.auth-overlay.active { display: flex; }
+
+.auth-container {
+  background: #F0F0F0;
+  width: 360px;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  padding: 1.5rem 1.5rem 2rem;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 90vh;
+
+  /* ✅ added */
+  overflow-y: auto;
+}
+
+/* Allow scrolling without visible scrollbar */
+.auth-container {
+  overflow-y: auto;
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE 10+ */
+}
+
+.auth-container::-webkit-scrollbar {
+  display: none;                  /* Chrome, Safari, Edge */
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #0F0F0F;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.close-modal:hover {
+  transform: rotate(90deg) scale(1.2);
+}
+
+.auth-logo-container { margin-bottom: 0.5rem; }
+.auth-logo { height: 48px; width: auto; }
+
+.auth-title { 
+  font-family: 'Orbitron', sans-serif; 
+  font-size: 1.5rem; 
+  color: #EE247C; 
+  margin-bottom: 0.25rem; 
+}
+.auth-subtitle { 
+  font-family: 'Cascadia Code', monospace; 
+  font-size: 0.85rem; 
+  color: #0F0F0F; 
+  margin-bottom: 1rem; 
+}
+
+.auth-panel { display: flex; flex-direction: column; gap: 0.65rem; }
+.auth-panel.hidden { display: none; }
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.auth-form input {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #CCCCCC;
+  background: #0F0F0F;
+  color: #F0F0F0;
+  font-family: 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+input::placeholder {
+    color: #CCCCCC;
+}
+
+.auth-form input:focus {
+  border-color: #FE77AA;
+  outline: none;
+}
+
+/* Password toggle wrapper */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper input {
+  flex: 1;
+  padding-right: 2.5rem; /* space for toggle */
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;              /* move to middle of wrapper */
+  transform: translateY(-50%); /* adjust for perfect centering */
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center; /* ensures SVG is centered inside the button */
+}
+
+.toggle-password img {
+  width: 1.19rem;
+  height: 1.19rem;
+}
+.auth-form input:focus { border-color: #FE77AA; outline: none; }
+
+.auth-btn {
+  margin-top: 0.5rem;
+  padding: 0.65rem;
+  font-family: 'Cascadia Code', monospace;
+  font-weight: bold;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+  color: #F0F0F0;
+  transition: all 0.2s ease;
+}
+.auth-btn:hover { background: #0F0F0F; }
+
+.guest-btn {
+  margin-top: 0.5rem;
+  padding: 0.55rem;
+  font-size: 0.9rem;
+  font-family: 'Cascadia Code', monospace;
+  border-radius: 14px;
+  border: none;
+  background: #0F0F0F;
+  color: #F0F0F0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.guest-btn:hover { background: linear-gradient(90deg, #EE247C, #FE77AA); }
+
+.switch-text { font-size: 0.8rem; margin-top: 0.3rem; }
+.switch-text a { color: #EE247C; text-decoration: none; position: relative; }
+.switch-text a::after { content: ''; position: absolute; bottom: -2px; left: 0; height: 2px; width: 0; background: #FE77AA; transition: width 0.25s ease; }
+.switch-text a:hover::after { width: 100%; }
+
+@keyframes fadeIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Hide both by default */
+.sign-in-btn,
+#navProfile {
+  display: none;
+}
+
+/* Logged out */
+html.auth-none .sign-in-btn {
+  display: inline-flex;
+}
+
+/* Logged in (guest or user) */
+html.auth-user #navProfile,
+html.auth-guest #navProfile {
+  display: inline-flex;
+}
+
+/* NEW REPLACEMENT CODE */
+.nav-auth {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  justify-items: end; 
+  min-height: 44px;
+  min-width: 44px; /* Minimum size for the icon, but can grow for the button */
+}
+
+.sign-in-btn,
+#navProfile {
+  grid-column: 1;
+  grid-row: 1;
+  /* Use visibility/opacity instead of display:none to prevent jumping */
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* When active, make visible */
+html.auth-none .sign-in-btn,
+html.auth-user #navProfile,
+html.auth-guest #navProfile {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.auth-notice {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #0F0F0F;
+  color: #F0F0F0;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  font-family: 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 9999;
+  /* Centering additions */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.auth-notice.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.badge-icon {
+  width: 35px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Prevents icon from squishing */
+}
+
+/* Optional: Make unobtained icons look "locked" (grayscale) */
+.unobtained .badge-icon img {
+  filter: grayscale(1) opacity(0.5);
+}
+
+.obtained .badge-icon img {
+  filter: none; /* Full color when earned */
+}
+
+/* Guest notice overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.notice-card {
+  background: #F0F0F0;
+  width: 360px;
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem 2rem;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  max-height: 90vh;
+
+  /* scrollable without scrollbar */
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.notice-card::-webkit-scrollbar {
+  display: none;
+}
+
+.notice-card .auth-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  color: #EE247C;
+  margin-bottom: -0.5rem;
+}
+
+.notice-text {
+  font-family: 'Cascadia Code', monospace;
+  font-size: 0.85rem;
+  color: #0F0F0F;
+  line-height: 1.5;
+}
+
+.notice-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+.notice-actions button {
+  flex: 1;
+  padding: 0.75rem 0;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Cascadia Code', monospace;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rtn-btn {
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+  color: #F0F0F0;
+}
+
+.rtn-btn:hover {
+  background: #0F0F0F;
+  color: #F0F0F0;
+}
+
+.prcd-btn {
+  background: #0F0F0F;
+  color: #F0F0F0;
+}
+
+.prcd-btn:hover {
+  background: linear-gradient(90deg, #EE247C, #FE77AA);
+  color: #F0F0F0;
+}
+
+.checkbox-container {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+
+  font-family: 'Cascadia Code', monospace;
+  font-size: 0.75rem;
+  color: #0F0F0F;
+
+  line-height: 1;
+}
+
+.checkbox-container input {
+  display: none;
+}
+
+.checkmark {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 2px solid #0F0F0F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-container input:checked + .checkmark {
+  border-color: #EE247C;
+}
+
+.checkbox-container input:checked + .checkmark::after {
+  content: "✓";
+  font-size: 9.8px;
+  color: #EE247C;
+  font-weight: bold;
+}
+
+.label-text {
+  transform: none;
+}
+
+/* =========================================
+   PERSONALIZED USER DROPDOWN (REGISTERED)
+   ========================================= */
+
+/* The top container for the User's name and large photo */
+.user-info-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.4rem 0.7rem 1.05rem;
+  margin-bottom: -0.7rem;
+  text-align: center;
+}
+
+/* The larger PFP inside the menu */
+.menu-large-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 0.7rem;
+}
+
+/* The First Name text */
+.user-name-display {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  color: #FE77AA;
+  margin: 0;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Hover effect for personalized view */
+.user-info-header:hover .menu-large-avatar {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Ensure 'hidden' class works forcefully */
+.user-info-header.hidden {
+  display: none !important;
+}
+
+/* Fix layering: Ensure Navbar is above Hero */
+.navbar {
+  position: relative;
+  z-index: 2000 !important;
+}
+
+/* Force dropdown to the absolute front */
+.profile-menu {
+  z-index: 10000 !important;
+}
