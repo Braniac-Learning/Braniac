@@ -102,7 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- BUTTON ACTIONS ---
-  logoutBtn?.addEventListener('click', () => {
+  logoutBtn?.addEventListener('click', async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     localStorage.removeItem('braniacSession');
     const isBackendUrl = window.location.pathname.includes('/backend/');
     window.location.href = isBackendUrl ? '../frontend-deploy/index.html' : 'index.html';
@@ -138,7 +143,40 @@ function clearSession() {
   localStorage.removeItem('braniacSession');
 }
 
-// Optimized Sign-In Submission
+// -----------------------------
+// SIGN IN FORM SUBMISSION
+// -----------------------------
+const signInForm = document.getElementById('signInForm');
+if (signInForm) {
+  signInForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (!signInForm.checkValidity()) {
+      signInForm.reportValidity();
+      return;
+    }
+
+    const usernameInput = signInForm.querySelector('input[placeholder="Username"]');
+    const passwordInput = signInForm.querySelector('input[type="password"]');
+    
+    const username = usernameInput ? usernameInput.value.trim() : "";
+    const password = passwordInput ? passwordInput.value : "";
+
+    try {
+      const result = await authAPI.login(username, password);
+      
+      if (result.ok) {
+        // Login successful
+        const isBackend = window.location.pathname.includes('/backend/');
+        window.location.href = isBackend ? '../frontend-deploy/index.html' : 'index.html';
+      }
+    } catch (error) {
+      alert(error.message || 'Login failed. Please check your credentials.');
+    }
+  });
+}
+
+// Fallback: Optimized Sign-In Submission (old form)
 document.querySelector('.auth-form')?.addEventListener('submit', (e) => {
   e.preventDefault();
   const isBackend = window.location.pathname.includes('/backend/');
@@ -199,7 +237,7 @@ switchToSignIn?.addEventListener('click', (e) => {
 // -----------------------------
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
-  registerForm.addEventListener('submit', (e) => {
+  registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     if (!registerForm.checkValidity()) {
@@ -207,18 +245,27 @@ if (registerForm) {
       return;
     }
 
+    const usernameInput = registerForm.querySelector('input[placeholder="Username"]');
     const firstNameInput = registerForm.querySelector('input[placeholder="First Name"]');
+    const passwordInput = registerForm.querySelector('input[type="password"]');
+    const confirmPasswordInput = registerForm.querySelectorAll('input[type="password"]')[1];
+    
+    const username = usernameInput ? usernameInput.value.trim() : "";
     const firstName = firstNameInput ? firstNameInput.value.trim() : "";
-    
-    if (firstName) {
-      localStorage.setItem('braniacFirstName', firstName);
-    }
+    const password = passwordInput ? passwordInput.value : "";
+    const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : "";
 
-    // FIX: Detect if we are inside the /backend/ folder
-    const isBackend = window.location.pathname.includes('/backend/');
-    
-    // Redirect to onboarding: if in backend, go up one level to find the root file
-    window.location.href = isBackend ? '../frontend-deploy/onboarding.html' : 'onboarding.html';
+    try {
+      const result = await authAPI.register(username, firstName, password, confirmPassword);
+      
+      if (result.ok) {
+        // Registration successful
+        const isBackend = window.location.pathname.includes('/backend/');
+        window.location.href = isBackend ? '../frontend-deploy/onboarding.html' : 'onboarding.html';
+      }
+    } catch (error) {
+      alert(error.message || 'Registration failed. Please try again.');
+    }
   });
 }
 

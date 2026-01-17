@@ -442,9 +442,11 @@ const DB_NAME = process.env.DB_NAME || 'braniac_db';
 let db;
 let usersCollection;
 let sessionsCollection;
+let userDataCollection; // New collection for user progress data
 // In-memory fallback stores when MongoDB is not available
 const inMemoryUsers = new Map(); // username -> user object
 const inMemorySessions = new Map(); // token -> { token, username, createdAt }
+const inMemoryUserData = new Map(); // username -> user data (scores, achievements, progress)
 
 // Connect to MongoDB
 async function connectDB() {
@@ -454,11 +456,13 @@ async function connectDB() {
         db = client.db(DB_NAME);
         usersCollection = db.collection('users');
         sessionsCollection = db.collection('sessions');
+        userDataCollection = db.collection('userData');
         
         // Create indexes for faster lookups
         await usersCollection.createIndex({ username: 1 }, { unique: true });
         await sessionsCollection.createIndex({ token: 1 }, { unique: true });
         await sessionsCollection.createIndex({ createdAt: 1 }, { expireAfterSeconds: 604800 }); // 7 days
+        await userDataCollection.createIndex({ username: 1 }, { unique: true });
         
         console.log('✅ Connected to MongoDB successfully');
     } catch (err) {
@@ -556,6 +560,105 @@ async function deleteSession(token) {
     } catch (err) {
         console.error('Error deleting in-memory session:', err);
     }
+}
+
+// User Data Management Functions
+async function getUserData(username) {
+    if (userDataCollection) {
+        try {
+            const data = await userDataCollection.findOne({ username });
+            return data || null;
+        } catch (err) {
+            console.error('Error getting user data from DB:', err);
+        }
+    }
+    // Fallback to in-memory
+    return inMemoryUserData.get(username) || null;
+}
+
+async function saveUserData(username, data) {
+    const userData = {
+        username,
+        scores: data.scores || [],
+        achievements: data.achievements || [],
+        totalPoints: data.totalPoints || 0,
+        questionsAnswered: data.questionsAnswered || 0,
+        correctAnswers: data.correctAnswers || 0,
+        quizzesTaken: data.quizzesTaken || 0,
+        currentStreak: data.currentStreak || 0,
+        longestStreak: data.longestStreak || 0,
+        lastQuizDate: data.lastQuizDate || null,
+        profilePicture: data.profilePicture || 'assets/icons/guest.svg',
+        bio: data.bio || '',
+        updatedAt: new Date()
+    };
+
+    if (userDataCollection) {
+        try {
+            await userDataCollection.updateOne(
+                { username },
+                { $set: userData },
+                { upsert: true }
+            );
+            return true;
+        } catch (err) {
+            console.error('Error saving user data to DB:', err);
+        }
+    }
+    // Fallback to in-memory
+    inMemoryUserData.set(username, userData);
+    return true;
+}
+
+async function updateUserScore(username, scoreData) {
+    let userData = await getUserData(username) || {
+        scores: [],
+        achievements: [],
+        totalPoints: 0,
+        questionsAnswered: 0,
+        correctAnswers: 0,
+        quizzesTaken: 0,
+        currentStreak: 0,
+        longestStreak: 0
+    };
+
+    // Add new score
+    userData.scores = userData.scores || [];
+    userData.scores.push({
+        topic: scoreData.topic,
+        score: scoreData.score,
+        totalQuestions: scoreData.totalQuestions,
+        correctAnswers: scoreData.correctAnswers,
+        difficulty: scoreData.difficulty,
+        date: new Date(),
+        timeSpent: scoreData.timeSpent || 0
+    });
+
+    // Update stats
+    userData.totalPoints = (userData.totalPoints || 0) + scoreData.score;
+    userData.questionsAnswered = (userData.questionsAnswered || 0) + scoreData.totalQuestions;
+    userData.correctAnswers = (userData.correctAnswers || 0) + scoreData.correctAnswers;
+    userData.quizzesTaken = (userData.quizzesTaken || 0) + 1;
+
+    // Update streak
+    const today = new Date().toDateString();
+    const lastDate = userData.lastQuizDate ? new Date(userData.lastQuizDate).toDateString() : null;
+    
+    if (lastDate === today) {
+        // Same day, don't change streak
+    } else {
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        if (lastDate === yesterday) {
+            userData.currentStreak = (userData.currentStreak || 0) + 1;
+        } else {
+            userData.currentStreak = 1;
+        }
+        userData.longestStreak = Math.max(userData.longestStreak || 0, userData.currentStreak);
+    }
+    userData.lastQuizDate = new Date();
+
+    await saveUserData(username, userData);
+    return userData;
 }
 
 // Register route
@@ -713,7 +816,161 @@ app.get('/api/auth/me', async (req, res) => {
     if (!user) {
         return res.status(401).json({ error: 'Not authenticated' });
     }
-    return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
+    
+    // Get user data along with basic info
+    const userData = await getUserData(user.username);
+    
+    return res.json({ 
+        ok: true, 
+        user: { 
+            username: user.username, 
+            firstName: user.firstName 
+        },
+        userData: userData || {
+            scores: [],
+            achievements: [],
+            totalPoints: 0,
+            questionsAnswered: 0,
+            correctAnswers: 0,
+            quizzesTaken: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            profilePicture: 'assets/icons/guest.svg',
+            bio: ''
+        }
+    });
+});
+
+// Get user data
+app.get('/api/user/data', async (req, res) => {
+    try {
+        const user = await getUserFromRequest(req);
+        if (!user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const userData = await getUserData(user.username);
+        if (!userData) {
+            return res.json({
+                ok: true,
+                data: {
+                    scores: [],
+                    achievements: [],
+                    totalPoints: 0,
+                    questionsAnswered: 0,
+                    correctAnswers: 0,
+                    quizzesTaken: 0,
+                    currentStreak: 0,
+                    longestStreak: 0,
+                    profilePicture: 'assets/icons/guest.svg',
+                    bio: ''
+                }
+            });
+        }
+
+        return res.json({ ok: true, data: userData });
+    } catch (err) {
+        console.error('Error getting user data:', err);
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Save/Update user data
+app.post('/api/user/data', async (req, res) => {
+    try {
+        const user = await getUserFromRequest(req);
+        if (!user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const { data } = req.body;
+        if (!data) {
+            return res.status(400).json({ error: 'Data is required' });
+        }
+
+        await saveUserData(user.username, data);
+        return res.json({ ok: true, message: 'Data saved successfully' });
+    } catch (err) {
+        console.error('Error saving user data:', err);
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Submit quiz score
+app.post('/api/user/score', async (req, res) => {
+    try {
+        const user = await getUserFromRequest(req);
+        if (!user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const { topic, score, totalQuestions, correctAnswers, difficulty, timeSpent } = req.body;
+        
+        if (topic === undefined || score === undefined || totalQuestions === undefined || correctAnswers === undefined) {
+            return res.status(400).json({ error: 'Missing required score data' });
+        }
+
+        const updatedData = await updateUserScore(user.username, {
+            topic,
+            score,
+            totalQuestions,
+            correctAnswers,
+            difficulty: difficulty || 'intermediate',
+            timeSpent: timeSpent || 0
+        });
+
+        return res.json({ ok: true, data: updatedData });
+    } catch (err) {
+        console.error('Error saving score:', err);
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Update user achievements
+app.post('/api/user/achievements', async (req, res) => {
+    try {
+        const user = await getUserFromRequest(req);
+        if (!user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const { achievements } = req.body;
+        if (!Array.isArray(achievements)) {
+            return res.status(400).json({ error: 'Achievements must be an array' });
+        }
+
+        let userData = await getUserData(user.username) || {};
+        userData.achievements = achievements;
+        await saveUserData(user.username, userData);
+
+        return res.json({ ok: true, message: 'Achievements updated' });
+    } catch (err) {
+        console.error('Error updating achievements:', err);
+        return res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Update user profile
+app.post('/api/user/profile', async (req, res) => {
+    try {
+        const user = await getUserFromRequest(req);
+        if (!user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const { profilePicture, bio } = req.body;
+        
+        let userData = await getUserData(user.username) || {};
+        if (profilePicture !== undefined) userData.profilePicture = profilePicture;
+        if (bio !== undefined) userData.bio = bio;
+        
+        await saveUserData(user.username, userData);
+
+        return res.json({ ok: true, message: 'Profile updated' });
+    } catch (err) {
+        console.error('Error updating profile:', err);
+        return res.status(500).json({ error: 'Server error' });
+    }
 });
 
 // Favicon route

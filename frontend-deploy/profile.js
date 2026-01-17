@@ -85,18 +85,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // 6. SAVE FORM
-    document.getElementById('editProfileForm').onsubmit = (e) => {
+    document.getElementById('editProfileForm').onsubmit = async (e) => {
         e.preventDefault();
         
-        localStorage.setItem('braniacBio', editBio.value);
-        
-        const updatedSession = {
-            ...session,
-            firstName: editFirstName.value,
-            pfp: currentPfp.src
-        };
-        
-        localStorage.setItem('braniacSession', JSON.stringify(updatedSession));
-        window.location.href = 'index.html';
+        try {
+            // Save to backend if authenticated
+            if (session.type === 'user') {
+                await authAPI.updateProfile({
+                    profilePicture: currentPfp.src,
+                    bio: editBio.value
+                });
+            }
+            
+            // Update localStorage
+            localStorage.setItem('braniacBio', editBio.value);
+            
+            const updatedSession = {
+                ...session,
+                firstName: editFirstName.value,
+                pfp: currentPfp.src
+            };
+            
+            localStorage.setItem('braniacSession', JSON.stringify(updatedSession));
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            alert('Failed to save profile. Please try again.');
+        }
     };
 });
