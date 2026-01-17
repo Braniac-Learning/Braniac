@@ -1277,19 +1277,31 @@ setInterval(() => {
     }
 }, 300000); // Check every 5 minutes
 
+// Startup environment check
+console.log('🔍 Environment Check:');
+console.log('- MONGODB_URI:', process.env.MONGODB_URI ? '✅ Set' : '❌ Missing');
+console.log('- GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ Set' : '❌ Missing');
+console.log('- DB_NAME:', process.env.DB_NAME ? '✅ Set' : '❌ Missing');
+console.log('- SESSION_SECRET:', process.env.SESSION_SECRET ? '✅ Set' : '❌ Missing');
+console.log('- NODE_ENV:', process.env.NODE_ENV || 'development');
+
 // Global error handlers for unhandled rejections and exceptions
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    console.error('❌ Unhandled Rejection at:', promise);
+    console.error('❌ Reason:', reason);
 });
 
 process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
+    console.error('❌ Uncaught Exception:', error);
+    console.error('❌ Stack:', error.stack);
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Express error handler:', err.stack);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Express error handler caught error:');
+    console.error('❌ Error:', err.message);
+    console.error('❌ Stack:', err.stack);
+    res.status(500).json({ error: 'Internal server error', message: err.message });
 });
 
 // Export the app for serverless platforms (Vercel)
