@@ -474,7 +474,7 @@ async function connectDB() {
 // Start DB connection
 connectDB();
 
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('your-secure-random-secret');
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
 function validateUsername(username) {
     // Allow letters, numbers, hyphens and underscores, no spaces
@@ -1277,10 +1277,19 @@ setInterval(() => {
     }
 }, 300000); // Check every 5 minutes
 
-// Error handling
+// Global error handlers for unhandled rejections and exceptions
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
+
+// Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+    console.error('Express error handler:', err.stack);
+    res.status(500).json({ error: 'Internal server error' });
 });
 
 // Export the app for serverless platforms (Vercel)
