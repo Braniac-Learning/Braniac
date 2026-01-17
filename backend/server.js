@@ -978,9 +978,33 @@ app.get('/favicon.ico', (req, res) => {
     res.status(204).end();
 });
 
-// Serve the main HTML file
+// API root endpoint
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.json({ 
+        message: 'Braniac API Server',
+        status: 'running',
+        version: '1.0.0',
+        endpoints: {
+            health: '/health',
+            auth: {
+                register: 'POST /api/auth/register',
+                login: 'POST /api/auth/login',
+                logout: 'POST /api/auth/logout',
+                me: 'GET /api/auth/me'
+            },
+            user: {
+                data: 'GET /api/user/data',
+                updateData: 'POST /api/user/data',
+                submitScore: 'POST /api/user/score',
+                updateAchievements: 'POST /api/user/achievements',
+                updateProfile: 'POST /api/user/profile'
+            },
+            quiz: {
+                generateFromTopic: 'POST /api/generate-quiz/topic',
+                generateFromDocument: 'POST /api/generate-quiz/document'
+            }
+        }
+    });
 });
 
 // API Routes for quiz generation
