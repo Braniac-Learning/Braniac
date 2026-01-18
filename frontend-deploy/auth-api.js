@@ -1,7 +1,8 @@
 // Authentication API Client for Braniac
 // This module handles all authentication and user data operations with the backend
 
-const API_BASE_URL = 'http://localhost:3001'; // Update for production
+// Allow override from hosting environment by setting `window.API_BASE`
+const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'http://localhost:3001'; // Update for production
 
 class AuthAPI {
     constructor() {

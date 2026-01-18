@@ -28,8 +28,8 @@ services:
   - name: braniac-frontend
     type: web
     runtime: static
-    branch: main
+    branch: master
     plan: free
     buildCommand: echo "No build required"
-    staticPublishPath: frontend
+    staticPublishPath: frontend-deploy
     autoDeploy: true

@@ -1,3 +1,7 @@
+// API base can be set by the hosting environment by adding a small script
+// before the main bundle that sets `window.API_BASE = 'https://your-backend.com'`.
+const API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'http://localhost:3001';
+
 let quizData = {
     questions: [],
     currentQuestion: 0,
@@ -46,7 +50,7 @@ async function generateTopicQuiz() {
     showLoading('Creating your quiz...');
 
     try {
-        const response = await fetch('http://localhost:3001/api/generate-quiz/topic', {
+        const response = await fetch(`${API_BASE}/api/generate-quiz/topic`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -92,7 +96,7 @@ async function generateDocumentQuiz() {
         formData.append('questionCount', questionCount);
         formData.append('difficulty', difficulty);
 
-        const response = await fetch('http://localhost:3001/api/generate-quiz/document', {
+        const response = await fetch(`${API_BASE}/api/generate-quiz/document`, {
             method: 'POST',
             body: formData
         });
@@ -186,7 +190,7 @@ function showMultiplayer() {
     document.getElementById('home').classList.remove('active');
     document.getElementById('multiplayer').classList.add('active');
     
-    const socket = io('http://localhost:3001');
+    const socket = io(API_BASE);
     quizData.multiplayer.socket = socket;
     quizData.mode = 'multiplayer';
 
@@ -246,7 +250,7 @@ function createRoom() {
     const difficulty = prompt('Difficulty (beginner/intermediate/advanced/expert):', 'intermediate');
 
     // Generate quiz first
-    fetch('http://localhost:3001/api/generate-quiz/topic', {
+            fetch(`${API_BASE}/api/generate-quiz/topic`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
