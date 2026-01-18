@@ -388,16 +388,59 @@ function goHome() {
 // Save score to localStorage
 function saveScore(scoreData) {
     try {
+        // Save to localStorage for immediate access
         const scores = JSON.parse(localStorage.getItem('userScores')) || [];
         scores.unshift(scoreData); // Add to beginning
         
-        // Keep only last 50 scores
+        // Keep only last 50 scores in localStorage
         if (scores.length > 50) {
             scores.length = 50;
         }
         
         localStorage.setItem('userScores', JSON.stringify(scores));
+        
+        // Also save to backend/MongoDB
+        saveScoreToBackend(scoreData);
     } catch (error) {
         console.error('Error saving score:', error);
+    }
+}
+
+// Save score to backend API
+async function saveScoreToBackend(scoreData) {
+    try {
+        const session = JSON.parse(localStorage.getItem('braniacSession'));
+        
+        // Only save to backend for registered users
+        if (!session || session.type !== 'user') {
+            console.log('Guest user - score saved to localStorage only');
+            return;
+        }
+        
+        const response = await fetch(`${API_BASE}/api/user/score`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include', // Include cookies for auth
+            body: JSON.stringify({
+                topic: scoreData.name,
+                score: scoreData.percentage,
+                totalQuestions: scoreData.total,
+                correctAnswers: scoreData.score,
+                difficulty: 'intermediate',
+                timeSpent: 0,
+                quizType: scoreData.type,
+                date: scoreData.date
+            })
+        });
+        
+        if (response.ok) {
+            console.log('Score saved to database successfully');
+        } else {
+            console.error('Failed to save score to database:', response.status);
+        }
+    } catch (error) {
+        console.error('Error saving score to backend:', error);
     }
 }

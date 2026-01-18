@@ -21,13 +21,56 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /**
-   * RENDER SCORES
+   * RENDER SCORES - Load from backend if logged in, otherwise from localStorage
    */
-  renderScores();
+  loadAndRenderScores();
 });
 
-function renderScores() {
-  const scores = JSON.parse(localStorage.getItem('userScores')) || [];
+async function loadAndRenderScores() {
+  const session = JSON.parse(localStorage.getItem('braniacSession'));
+  let scores = [];
+  
+  // Try to load from backend if user is logged in
+  if (session && session.type === 'user') {
+    try {
+      const API_BASE = window.API_BASE || window.location.origin;
+      const response = await fetch(`${API_BASE}/api/user/data`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.ok && data.data && data.data.scores) {
+          // Convert backend scores to frontend format
+          scores = data.data.scores.map(s => ({
+            type: s.quizType || 'topic',
+            name: s.topic,
+            score: s.correctAnswers,
+            total: s.totalQuestions,
+            percentage: s.score,
+            date: s.date
+          }));
+          console.log('Loaded scores from database:', scores.length);
+        }
+      } else {
+        console.log('Failed to load scores from backend, using localStorage');
+      }
+    } catch (error) {
+      console.error('Error loading scores from backend:', error);
+    }
+  }
+  
+  // Fallback to localStorage if backend failed or guest user
+  if (scores.length === 0) {
+    scores = JSON.parse(localStorage.getItem('userScores')) || [];
+    console.log('Using localStorage scores:', scores.length);
+  }
+  
+  renderScores(scores);
+}
+
+function renderScores(scores) {
   
   console.log('Total scores found:', scores.length);
   
