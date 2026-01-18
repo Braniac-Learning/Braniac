@@ -29,37 +29,64 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderScores() {
   const scores = JSON.parse(localStorage.getItem('userScores')) || [];
   
-  if (scores.length === 0) {
-    console.log('No scores found');
-    return;
-  }
-
+  console.log('Total scores found:', scores.length);
+  
   // Group scores by type
   const topicScores = scores.filter(s => s.type === 'topic');
   const documentScores = scores.filter(s => s.type === 'document');
   const multiplayerScores = scores.filter(s => s.type === 'multiplayer');
 
+  console.log('Topic:', topicScores.length, 'Document:', documentScores.length, 'Multiplayer:', multiplayerScores.length);
+
   // Find containers
+  const topicSection = document.querySelector('#topic-scores');
+  const documentSection = document.querySelector('#document-scores');
+  const multiplayerSection = document.querySelector('#multiplayer-scores');
+  const noDataView = document.querySelector('#noDataView');
+
   const topicContainer = document.querySelector('#topic-scores .scores-grid');
   const documentContainer = document.querySelector('#document-scores .scores-grid');
   const multiplayerContainer = document.querySelector('#multiplayer-scores .scores-grid');
 
-  if (topicContainer) {
-    topicContainer.innerHTML = topicScores.length > 0 
-      ? topicScores.map(score => createScoreCard(score)).join('') 
-      : '<p style="text-align: center; color: #666;">No topic quiz scores yet</p>';
+  // Show/hide noDataView
+  if (scores.length === 0) {
+    noDataView?.classList.remove('hidden');
+    noDataView?.style.setProperty('display', 'flex');
+    topicSection?.style.setProperty('display', 'none');
+    documentSection?.style.setProperty('display', 'none');
+    multiplayerSection?.style.setProperty('display', 'none');
+    return;
+  } else {
+    noDataView?.classList.add('hidden');
+    noDataView?.style.setProperty('display', 'none');
   }
 
-  if (documentContainer) {
-    documentContainer.innerHTML = documentScores.length > 0 
-      ? documentScores.map(score => createScoreCard(score)).join('') 
-      : '<p style="text-align: center; color: #666;">No document quiz scores yet</p>';
+  // Show/hide sections based on content
+  if (topicScores.length > 0) {
+    topicSection?.style.setProperty('display', 'block');
+    if (topicContainer) {
+      topicContainer.innerHTML = topicScores.map(score => createScoreCard(score)).join('');
+    }
+  } else {
+    topicSection?.style.setProperty('display', 'none');
   }
 
-  if (multiplayerContainer) {
-    multiplayerContainer.innerHTML = multiplayerScores.length > 0 
-      ? multiplayerScores.map(score => createScoreCard(score)).join('') 
-      : '<p style="text-align: center; color: #666;">No multiplayer quiz scores yet</p>';
+  if (documentScores.length > 0) {
+    documentSection?.style.setProperty('display', 'block');
+    if (documentContainer) {
+      documentContainer.innerHTML = documentScores.map(score => createScoreCard(score)).join('');
+    }
+  } else {
+    documentSection?.style.setProperty('display', 'none');
+  }
+
+  if (multiplayerScores.length > 0) {
+    multiplayerSection?.style.setProperty('display', 'block');
+    if (multiplayerContainer) {
+      multiplayerContainer.innerHTML = multiplayerScores.map(score => createScoreCard(score)).join('');
+    }
+  } else {
+    multiplayerSection?.style.setProperty('display', 'none');
   }
 }
 
