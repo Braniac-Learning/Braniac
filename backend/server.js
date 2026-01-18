@@ -1096,7 +1096,24 @@ app.post('/api/generate-quiz/document', upload.single('document'), handleMulterE
         console.log(`Document content length: ${fileContent.length} characters`);
         const questions = await generateQuizFromDocument(fileContent, questionCount, difficulty);
         
-        res.json({ questions });
+        // Generate 3-word summary using AI
+        let summary = req.file.originalname.replace(/\.[^/.]+$/, "").substring(0, 30); // Default fallback
+        
+        try {
+            const summaryPrompt = `Summarize the following document content in EXACTLY 3 words maximum. Be concise and descriptive:\n\n${fileContent.substring(0, 500)}`;
+            const summaryResult = await model.generateContent(summaryPrompt);
+            const summaryText = summaryResult.response.text().trim();
+            // Take only first 3 words
+            const words = summaryText.split(/\s+/).slice(0, 3);
+            if (words.length > 0) {
+                summary = words.join(' ');
+            }
+        } catch (error) {
+            console.error('Error generating summary:', error);
+            // Fallback already set above
+        }
+        
+        res.json({ questions, summary });
     } catch (error) {
         console.error('Error generating document quiz:', error);
         res.status(500).json({ error: error.message });
@@ -1135,7 +1152,7 @@ io.on('connection', (socket) => {
     
     // Join an existing quiz room
     socket.on('joinRoom', (data) => {
-        const { pin, name } = data;
+        let { pin, name } = data;
         const room = rooms.get(pin);
         
         if (!room) {
@@ -1148,11 +1165,23 @@ io.on('connection', (socket) => {
             return;
         }
         
-        // Check if name already exists
-        const nameExists = room.players.some(player => player.name.toLowerCase() === name.toLowerCase());
-        if (nameExists) {
-            socket.emit('error', { message: 'Name already taken' });
-            return;
+        // If name is "Guest", auto-assign Guest number
+        if (name === 'Guest') {
+            let guestCount = room.players.filter(p => p.name.startsWith('Guest ')).length + 1;
+            name = `Guest ${guestCount}`;
+            
+            // Ensure unique guest number
+            while (room.players.some(p => p.name === name)) {
+                guestCount++;
+                name = `Guest ${guestCount}`;
+            }
+        } else {
+            // Check if name already exists for non-guests
+            const nameExists = room.players.some(player => player.name.toLowerCase() === name.toLowerCase());
+            if (nameExists) {
+                socket.emit('error', { message: 'Name already taken' });
+                return;
+            }
         }
         
         // Add player to room

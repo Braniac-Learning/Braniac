@@ -131,113 +131,20 @@
     <p>You haven't taken any quizzes yet.</p>
   </div>
 
-  <section class="score-list" id="allScores">
-    <div class="score-card">
-      <div class="score-info">
-        <strong>Algebra Basics</strong>
-        <div class="score-type">
-          <span class="type">TOPIC QUIZ</span>
-        </div>
-      </div>
-      <div class="score-ring-container">
-        <svg class="progress-ring" viewBox="0 0 100 100">
-          <circle class="ring-track" cx="50" cy="50" r="40"></circle>
-          <circle class="ring-snake" cx="50" cy="50" r="40" style="--percent: 80;"></circle>
-        </svg>
-        <div class="score-text">
-          <span class="correct">16</span>
-          <span class="divider">/</span>
-          <span class="total">20</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="score-card">
-      <div class="score-info">
-        <strong>Cell Biology</strong>
-        <div class="score-type">
-          <span class="type">DOCUMENT QUIZ</span>
-        </div>
-      </div>
-      <div class="score-ring-container">
-        <svg class="progress-ring" viewBox="0 0 100 100">
-          <circle class="ring-track" cx="50" cy="50" r="40"></circle>
-          <circle class="ring-snake" cx="50" cy="50" r="40" style="--percent: 75;"></circle>
-        </svg>
-        <div class="score-text">
-          <span class="correct">15</span>
-          <span class="divider">/</span>
-          <span class="total">20</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="score-card">
-      <div class="score-info">
-        <strong>Newton’s Laws</strong>
-        <div class="score-type">
-          <span class="type">MULTIPLAYER QUIZ</span>
-        </div>
-      </div>
-      <div class="score-ring-container">
-        <svg class="progress-ring" viewBox="0 0 100 100">
-          <circle class="ring-track" cx="50" cy="50" r="40"></circle>
-          <circle class="ring-snake" cx="50" cy="50" r="40" style="--percent: 70;"></circle>
-        </svg>
-        <div class="score-text">
-          <span class="correct">35</span>
-          <span class="divider">/</span>
-          <span class="total">50</span>
-        </div>
-      </div>
-    </div>
+  <section class="scores-section" id="topic-scores">
+    <h2 class="section-title">TOPIC QUIZZES</h2>
+    <div class="scores-grid"></div>
   </section>
-</main>
 
-<div class="auth-overlay" id="authOverlay">
-  <div class="auth-container">
+  <section class="scores-section" id="document-scores">
+    <h2 class="section-title">DOCUMENT QUIZZES</h2>
+    <div class="scores-grid"></div>
+  </section>
 
-    <!-- Close Button -->
-    <button class="close-modal" id="closeModal">&times;</button>
-
-    <!-- Logo -->
-    <div class="auth-logo-container">
-      <img src="assets/BRANIAC logos/braniac-logo(2).svg" alt="Braniac Logo" class="auth-logo">
-    </div>
-
-    <!-- Sign In Panel -->
-<div class="auth-panel" id="signInPanel">
-  <h2 class="auth-title">SIGN IN</h2>
-  <p class="auth-subtitle">Access your scores and achievements</p>
-
-  <form class="auth-form">
-    <input type="text" placeholder="Username" required>
-
-    <div class="password-wrapper">
-      <input type="password" placeholder="Password" required>
-      <button type="button" class="toggle-password" aria-label="Show/hide password">
-        <img src="assets/icons/eye.svg" alt="Toggle Password Visibility">
-      </button>
-    </div>
-
-    <button type="submit" class="auth-btn">SIGN IN</button>
-  </form>
-
-  <p class="switch-text">
-    Don't have an account? <a href="#" id="switchToRegister">Register</a>
-  </p>
-  <button class="guest-btn" id="guestBtn">Continue as Guest</button>
-</div>
-
-<!-- Register Panel -->
-<div class="auth-panel hidden" id="registerPanel">
-  <h2 class="auth-title">REGISTER</h2>
-  <p class="auth-subtitle">Create your account to track your progress</p>
-
-  <form class="auth-form" id="registerForm">
-    <input type="text" placeholder="Username" required>
-    <input type="text" placeholder="First Name" required>
-
+  <section class="scores-section" id="multiplayer-scores">
+    <h2 class="section-title">MULTIPLAYER QUIZZES</h2>
+    <div class="scores-grid"></div>
+  </section>
     <div class="password-wrapper">
       <input type="password" placeholder="Password" required>
       <button type="button" class="toggle-password" aria-label="Show/hide password">

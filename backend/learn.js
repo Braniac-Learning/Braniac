@@ -70,6 +70,8 @@ async function generateTopicQuiz() {
         quizData.score = 0;
         quizData.answers = [];
         quizData.mode = 'single';
+        quizData.quizType = 'topic';
+        quizData.quizName = topic;
         
         startQuiz();
     } catch (error) {
@@ -109,6 +111,9 @@ async function generateDocumentQuiz() {
         quizData.score = 0;
         quizData.answers = [];
         quizData.mode = 'single';
+        quizData.quizType = 'document';
+        quizData.quizName = data.summary || file.name.substring(0, 30);
+        quizData.documentFile = file.name;
         
         startQuiz();
     } catch (error) {
@@ -172,6 +177,16 @@ function nextQuestion() {
 
 function finishQuiz() {
     const percentage = Math.round((quizData.score / quizData.questions.length) * 100);
+    
+    // Save score to localStorage
+    saveScore({
+        type: quizData.mode === 'multiplayer' ? 'multiplayer' : (quizData.quizType || 'topic'),
+        name: quizData.quizName || 'Quiz',
+        score: quizData.score,
+        total: quizData.questions.length,
+        percentage: percentage,
+        date: new Date().toISOString()
+    });
     
     document.getElementById('quiz').classList.remove('active');
     document.getElementById('results').classList.add('active');
@@ -249,6 +264,10 @@ function createRoom() {
     const questionCount = prompt('Number of questions:', '5');
     const difficulty = prompt('Difficulty (beginner/intermediate/advanced/expert):', 'intermediate');
 
+    // Store quiz name for score tracking
+    quizData.quizName = topic;
+    quizData.quizType = 'multiplayer';
+
     // Generate quiz first
             fetch(`${API_BASE}/api/generate-quiz/topic`, {
         method: 'POST',
@@ -272,8 +291,17 @@ function showJoinForm() {
     const pin = prompt('Enter room PIN:');
     if (!pin) return;
 
-    const name = prompt('Enter your first name:');
-    if (!name) return;
+    // Auto-use firstName from session
+    const session = JSON.parse(localStorage.getItem('braniacSession'));
+    let name;
+    
+    if (session && session.type === 'user') {
+        // Use registered user's first name
+        name = session.firstName || session.username;
+    } else {
+        // For guests, server will assign "Guest 1", "Guest 2", etc.
+        name = 'Guest';
+    }
 
     quizData.multiplayer.socket.emit('joinRoom', { pin, name });
 }
@@ -316,6 +344,21 @@ function displayMultiplayerResults(results) {
     document.getElementById('quiz').classList.remove('active');
     document.getElementById('results').classList.add('active');
 
+    // Save multiplayer score for current user
+    const session = JSON.parse(localStorage.getItem('braniacSession'));
+    const currentUserResult = results.find(r => r.name === (session?.firstName || session?.username || 'Guest'));
+    
+    if (currentUserResult) {
+        saveScore({
+            type: 'multiplayer',
+            name: quizData.quizName || 'Multiplayer Quiz',
+            score: currentUserResult.score,
+            total: currentUserResult.total,
+            percentage: currentUserResult.percentage,
+            date: new Date().toISOString()
+        });
+    }
+
     let html = '<h3 style="margin-bottom: 20px;">Final Leaderboard</h3>';
     results.forEach((result, index) => {
         const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
@@ -340,4 +383,21 @@ function goHome() {
     document.getElementById('results').classList.remove('active');
     document.getElementById('home').classList.add('active');
     document.getElementById('message').innerHTML = '';
+}
+
+// Save score to localStorage
+function saveScore(scoreData) {
+    try {
+        const scores = JSON.parse(localStorage.getItem('userScores')) || [];
+        scores.unshift(scoreData); // Add to beginning
+        
+        // Keep only last 50 scores
+        if (scores.length > 50) {
+            scores.length = 50;
+        }
+        
+        localStorage.setItem('userScores', JSON.stringify(scores));
+    } catch (error) {
+        console.error('Error saving score:', error);
+    }
 }
