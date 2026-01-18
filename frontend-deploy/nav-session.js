@@ -176,20 +176,6 @@ if (signInForm) {
   });
 }
 
-// Fallback: Optimized Sign-In Submission (old form)
-document.querySelector('.auth-form')?.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const isBackend = window.location.pathname.includes('/backend/');
-  
-  setSession({
-    type: 'user',
-    firstName: 'BRANIAC',
-    pfp: 'assets/icons/guest.svg' // Keep simple; re-calculated by robust loader above
-  });
-
-  window.location.href = isBackend ? '../frontend-deploy/index.html' : 'index.html';
-});
-
 // -----------------------------
 // AUTH MODAL HANDLING
 // -----------------------------
