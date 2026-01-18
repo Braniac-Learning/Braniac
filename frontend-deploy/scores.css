@@ -247,3 +247,18 @@ h1 {
 
 /* Keep the general hidden class for other uses */
 .hidden { display: none !important; }
+/* Scores Sections */
+.scores-section { margin: 2rem auto; max-width: 1200px; padding: 0 2rem; }
+.section-title { font-family: "Orbitron", sans-serif; color: #0F0F0F; font-size: 1.2rem; margin-bottom: 1.5rem; letter-spacing: 2px; text-transform: uppercase; border-bottom: 2px solid #EE247C; padding-bottom: 0.5rem; }
+.scores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+.score-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.score-title { font-size: 1rem; font-weight: 600; color: #0F0F0F; margin: 0; }
+.score-date { font-size: 0.75rem; color: #808080; }
+.score-body { display: flex; align-items: center; gap: 1.5rem; }
+.progress-ring-bg { fill: none; stroke: #f0f0f0; stroke-width: 10; }
+.progress-ring-fill { fill: none; stroke: #EE247C; stroke-width: 10; stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; }
+.progress-text { font-size: 1.2rem; font-weight: 600; fill: #0F0F0F; font-family: "Cascadia Code", monospace; }
+.score-stats { display: flex; flex-direction: column; gap: 0.5rem; }
+.stat { display: flex; justify-content: space-between; align-items: center; }
+.stat-label { font-size: 0.8rem; color: #808080; text-transform: uppercase; }
+.stat-value { font-size: 0.9rem; font-weight: 600; color: #0F0F0F; }
