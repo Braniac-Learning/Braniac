@@ -6,6 +6,9 @@
   <meta name="description" content="BRANIAC - Learn anything, outsmart everyone. AI-crafted quizzes for smarter learning." />
   <title>BRANIAC LEARNING</title>
 <script>
+  window.API_BASE = 'https://braniac-backend.onrender.com';
+</script>
+<script>
   (function () {
     const session = JSON.parse(localStorage.getItem('braniacSession'));
     const html = document.documentElement;
@@ -146,13 +149,8 @@
     <div class="scores-grid"></div>
   </section>
 
-    <button class="auth-btn" type="submit" id="registerBtn">REGISTER</button>
-  </form>
+</main>
 
-  <p class="switch-text">
-    Already have an account? <a href="#" id="switchToSignIn">Sign In</a>
-  </p>
-</div> </div> </div> 
 <script src="auth-api.js"></script>
 <script src="nav-session.js" defer></script>
 <script src="scores.js"></script>
