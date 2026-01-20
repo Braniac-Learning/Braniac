@@ -2,7 +2,7 @@
 // This module handles all authentication and user data operations with the backend
 
 // Allow override from hosting environment by setting `window.API_BASE`
-const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'http://localhost:3001'; // Update for production
+const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'https://braniac-backend.onrender.com';
 
 class AuthAPI {
     constructor() {

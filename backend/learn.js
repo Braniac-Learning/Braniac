@@ -1,6 +1,6 @@
 // API base can be set by the hosting environment by adding a small script
 // before the main bundle that sets `window.API_BASE = 'https://your-backend.com'`.
-const API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'http://localhost:3001';
+const API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'https://braniac-backend.onrender.com';
 
 let quizData = {
     questions: [],
