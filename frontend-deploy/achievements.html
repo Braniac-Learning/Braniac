@@ -120,25 +120,12 @@
   <div id="noDataView" class="no-data-container">
   <img src="assets/icons/no-data.svg" alt="No progress yet" class="no-data-icon">
   <h3>ZERO BRAIN ACTIVITY DETECTED</h3>
-  <p>You haven't obtained any achievements yet. Complete a quiz to start!</p>
+  <p>You haven't obtained any achievements yet.</p>
 </div>
 
-  <!-- OBTAINED ACHIEVEMENTS (dynamically populated) -->
+  <!-- OBTAINED -->
   <section class="achievement-list" id="obtained">
-    <!-- Achievement cards will be inserted here by achievements-logic.js -->
-  </section>
-
-  <!-- UNOBTAINED ACHIEVEMENTS (dynamically populated) -->
-  <section class="achievement-list" id="unobtained">
-    <!-- Achievement cards will be inserted here by achievements-logic.js -->
-  </section>
-</main>
-
-<div class="auth-overlay" id="authOverlay">
-  <div class="auth-container">
-
-    <!-- Close Button -->
-    <button class="close-modal" id="closeModal">&times;</button>
+    <div class="achievement-card obtained">
   <div class="card-main">
     <div class="badge-icon">
           <img src="assets/icons/achievements/first-steps.svg" alt="First Steps">
@@ -624,7 +611,7 @@
 </div> </div> </div> 
 <script src="auth-api.js"></script>
 <script src="nav-session.js" defer></script>
-<script src="achievements-logic.js"></script>
+<script src="achievements.js"></script>
 <script src="lock.js"></script>
 
 <div id="guestNoticeOverlay" class="modal-overlay hidden">
