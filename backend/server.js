@@ -630,7 +630,8 @@ async function updateUserScore(username, scoreData) {
         totalQuestions: scoreData.totalQuestions,
         correctAnswers: scoreData.correctAnswers,
         difficulty: scoreData.difficulty,
-        date: new Date(),
+        quizType: scoreData.quizType || 'topic',
+        date: scoreData.date || new Date(),
         timeSpent: scoreData.timeSpent || 0
     });
 
@@ -904,7 +905,7 @@ app.post('/api/user/score', async (req, res) => {
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        const { topic, score, totalQuestions, correctAnswers, difficulty, timeSpent } = req.body;
+        const { topic, score, totalQuestions, correctAnswers, difficulty, timeSpent, quizType, date } = req.body;
         
         if (topic === undefined || score === undefined || totalQuestions === undefined || correctAnswers === undefined) {
             return res.status(400).json({ error: 'Missing required score data' });
@@ -916,7 +917,9 @@ app.post('/api/user/score', async (req, res) => {
             totalQuestions,
             correctAnswers,
             difficulty: difficulty || 'intermediate',
-            timeSpent: timeSpent || 0
+            timeSpent: timeSpent || 0,
+            quizType: quizType || 'topic',
+            date: date || new Date()
         });
 
         return res.json({ ok: true, data: updatedData });
