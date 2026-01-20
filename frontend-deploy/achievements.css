@@ -220,7 +220,7 @@ h1 {
   position: absolute;
   top: 0;
   left: 0;
-  transform: rotate(-90deg);
+  transform: rotate(0deg);
 }
 
 .progress-ring-circle-bg {
