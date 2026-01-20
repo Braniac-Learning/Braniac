@@ -25,11 +25,13 @@ const io = socketIo(server, {
             'http://localhost:5000',
             'http://localhost:8000',
             'http://localhost:8001',
-            'https://your-frontend-domain.netlify.app', // Update this with your actual frontend URL
-            'https://your-frontend-domain.vercel.app',  // Update this with your actual frontend URL
             /\.netlify\.app$/,
             /\.vercel\.app$/,
-            /\.github\.io$/
+            /\.github\.io$/,
+            /\.render\.com$/,
+            /\.onrender\.com$/,
+            /\.web\.app$/,
+            /\.firebaseapp\.com$/
         ],
         methods: ["GET", "POST"],
         credentials: true
@@ -53,11 +55,13 @@ app.use(cors({
         'http://localhost:5000',
         'http://localhost:8000',
         'http://localhost:8001',
-        'https://your-frontend-domain.netlify.app', // Update this with your actual frontend URL
-        'https://your-frontend-domain.vercel.app',  // Update this with your actual frontend URL
         /\.netlify\.app$/,
         /\.vercel\.app$/,
-        /\.github\.io$/
+        /\.github\.io$/,
+        /\.render\.com$/,
+        /\.onrender\.com$/,
+        /\.web\.app$/,
+        /\.firebaseapp\.com$/
     ],
     credentials: true
 }));
