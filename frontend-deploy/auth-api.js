@@ -65,17 +65,25 @@ class AuthAPI {
         });
         
         if (data.ok) {
-            // Get full user data
-            const userData = await this.getUserData();
-            
-            // Save session to localStorage
+            // Save session to localStorage immediately
             const session = {
                 type: 'user',
                 username: data.user.username,
                 firstName: data.user.firstName,
-                pfp: userData.data?.profilePicture || 'assets/icons/guest.svg'
+                pfp: 'assets/icons/guest.svg'
             };
             localStorage.setItem('braniacSession', JSON.stringify(session));
+            
+            // Try to get full user data, but don't fail login if it errors
+            try {
+                const userData = await this.getUserData();
+                if (userData.ok && userData.data?.profilePicture) {
+                    session.pfp = userData.data.profilePicture;
+                    localStorage.setItem('braniacSession', JSON.stringify(session));
+                }
+            } catch (error) {
+                console.log('Could not load user data, using defaults');
+            }
         }
         
         return data;
