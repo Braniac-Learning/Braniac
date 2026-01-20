@@ -246,10 +246,10 @@ function createAchievementCardHTML(achievement, isObtained) {
                 <stop offset="100%" style="stop-color:#FE77AA;stop-opacity:1" />
               </linearGradient>
             </defs>
-            <circle class="progress-ring-circle-bg" cx="25" cy="25" r="13"></circle>
+            <circle class="progress-ring-circle-bg" cx="25" cy="25" r="7.625"></circle>
             <circle class="progress-ring-circle" 
-                    cx="25" cy="25" r="13"
-                    style="stroke-dasharray: ${2 * Math.PI * 13}; stroke-dashoffset: ${2 * Math.PI * 13 - (percentage / 100) * 2 * Math.PI * 13}; stroke: url(#progress-gradient-${achievement.id});"
+                    cx="25" cy="25" r="7.625"
+                    style="stroke-dasharray: ${2 * Math.PI * 7.625}; stroke-dashoffset: ${2 * Math.PI * 7.625 - (percentage / 100) * 2 * Math.PI * 7.625}; stroke: url(#progress-gradient-${achievement.id});"
                     data-percentage="${percentage}"></circle>
           </svg>
           ` : ''}
