@@ -227,21 +227,6 @@ function createAchievementCardHTML(achievement, isObtained) {
     <div class="achievement-card ${className}">
       <div class="card-main">
         <div class="badge-icon-wrapper">
-          ${!isObtained ? `
-          <svg class="progress-ring" width="90" height="90">
-            <defs>
-              <linearGradient id="progress-gradient-${achievement.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#EE247C;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#FE77AA;stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <circle class="progress-ring-circle-bg" cx="45" cy="45" r="${radius}"></circle>
-            <circle class="progress-ring-circle" 
-                    cx="45" cy="45" r="${radius}"
-                    style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${offset}; stroke: url(#progress-gradient-${achievement.id});"
-                    data-percentage="${percentage}"></circle>
-          </svg>
-          ` : ''}
           <div class="badge-icon">
             <img src="assets/icons/achievements/${achievement.id}.svg" 
                  alt="${achievement.name}"
@@ -253,6 +238,23 @@ function createAchievementCardHTML(achievement, isObtained) {
           <span>${achievement.description}</span>
         </div>
         <span class="status">${status}</span>
+        ${!isObtained ? `
+        <div class="progress-ring-right">
+          <svg class="progress-ring" width="60" height="60">
+            <defs>
+              <linearGradient id="progress-gradient-${achievement.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#EE247C;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FE77AA;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <circle class="progress-ring-circle-bg" cx="30" cy="30" r="26"></circle>
+            <circle class="progress-ring-circle" 
+                    cx="30" cy="30" r="26"
+                    style="stroke-dasharray: ${2 * Math.PI * 26}; stroke-dashoffset: ${2 * Math.PI * 26 - (percentage / 100) * 2 * Math.PI * 26}; stroke: url(#progress-gradient-${achievement.id});"
+                    data-percentage="${percentage}"></circle>
+          </svg>
+        </div>
+        ` : ''}
       </div>
       <div class="card-details">
         <p><strong>Progress:</strong> ${achievement.progress} ${!isObtained ? `(${Math.round(percentage)}%)` : ''}</p>

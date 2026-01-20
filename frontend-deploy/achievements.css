@@ -128,22 +128,26 @@ h1 {
 .card-text {
   flex: 1;
   text-align: left;
-  order: 1;
-}
-
-.status {
-  font-weight: bold;
-  order: 2;
 }
 
 .badge-icon-wrapper {
   position: relative;
-  width: 90px;
-  height: 90px;
+  width: 70px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
-  order: 3;
+}
+
+.status {
+  font-weight: bold;
+}
+
+.progress-ring-right {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
 }
 
 .card-text span {
@@ -219,6 +223,12 @@ h1 {
 }
 
 /* Progress Ring Styles */
+.progress-ring-right {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
 
 .progress-ring {
   position: absolute;
@@ -247,22 +257,10 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
 }
 
 .badge-icon img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-}
-
-/* Obtained achievements - no ring wrapper needed */
-.obtained .badge-icon-wrapper {
-  width: 70px;
-  height: 70px;
-}
-
-.obtained .badge-icon {
-  width: 70px;
-  height: 70px;
 }
