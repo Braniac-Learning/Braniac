@@ -1,11 +1,12 @@
-const session = JSON.parse(localStorage.getItem('braniacSession'));
-
-// 1. Redirect to landing page if no session is found
-if (!session) {
-  window.location.href = 'index.html';
-}
-
 document.addEventListener('DOMContentLoaded', () => {
+  // Check session first
+  const session = JSON.parse(localStorage.getItem('braniacSession'));
+  
+  if (!session) {
+    window.location.href = 'index.html';
+    return;
+  }
+
   /**
    * NAVIGATION LOGIC
    * Highlights the current page in the navbar
@@ -33,7 +34,7 @@ async function loadAndRenderScores() {
   // Try to load from backend if user is logged in
   if (session && session.type === 'user') {
     try {
-      const API_BASE = window.API_BASE || window.location.origin;
+      const API_BASE = window.API_BASE || 'https://braniac-backend.onrender.com';
       const response = await fetch(`${API_BASE}/api/user/data`, {
         method: 'GET',
         credentials: 'include'
@@ -41,30 +42,40 @@ async function loadAndRenderScores() {
       
       if (response.ok) {
         const data = await response.json();
-        if (data.ok && data.data && data.data.scores) {
+        if (data.ok && data.data && data.data.scores && Array.isArray(data.data.scores)) {
           // Convert backend scores to frontend format
           scores = data.data.scores.map(s => ({
             type: s.quizType || 'topic',
-            name: s.topic,
-            score: s.correctAnswers,
-            total: s.totalQuestions,
-            percentage: s.score,
-            date: s.date
+            name: s.topic || 'Unnamed Quiz',
+            score: s.correctAnswers || 0,
+            total: s.totalQuestions || 1,
+            percentage: s.score || 0,
+            date: s.date || new Date().toISOString()
           }));
-          console.log('Loaded scores from database:', scores.length);
+          console.log('✅ Loaded scores from database:', scores.length);
+          
+          // Also save to localStorage for offline access
+          localStorage.setItem('userScores', JSON.stringify(scores));
+        } else {
+          console.log('⚠️ No scores in backend response');
         }
       } else {
-        console.log('Failed to load scores from backend, using localStorage');
+        console.log('⚠️ Backend returned', response.status, '- using localStorage');
       }
     } catch (error) {
-      console.error('Error loading scores from backend:', error);
+      console.error('❌ Error loading scores from backend:', error.message);
     }
   }
   
   // Fallback to localStorage if backend failed or guest user
   if (scores.length === 0) {
-    scores = JSON.parse(localStorage.getItem('userScores')) || [];
-    console.log('Using localStorage scores:', scores.length);
+    try {
+      scores = JSON.parse(localStorage.getItem('userScores')) || [];
+      console.log('📦 Using localStorage scores:', scores.length);
+    } catch (e) {
+      console.error('❌ Error reading localStorage:', e);
+      scores = [];
+    }
   }
   
   renderScores(scores);
