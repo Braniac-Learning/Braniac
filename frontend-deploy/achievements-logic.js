@@ -215,8 +215,8 @@ function createAchievementCardHTML(achievement, isObtained) {
     ? (parseInt(progressMatch[1]) / parseInt(progressMatch[2])) * 100 
     : (isObtained ? 100 : 0);
   
-  // Status icon: ✓ if obtained, ● (filled circle) if progress > 0%, ◌ (empty circle) if 0%
-  const status = isObtained ? '✓' : (percentage > 0 ? '●' : '◌');
+  // Status icon: ✓ if obtained, ○ (outlined circle) if progress > 0%, ◌ (dots) if 0%
+  const status = isObtained ? '✓' : (percentage > 0 ? '○' : '◌');
   const className = isObtained ? 'obtained' : 'unobtained';
   
   // SVG circle calculations (radius 40, circumference = 2πr)
