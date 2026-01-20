@@ -595,6 +595,13 @@ async function saveUserData(username, data) {
         currentStreak: data.currentStreak || 0,
         longestStreak: data.longestStreak || 0,
         lastQuizDate: data.lastQuizDate || null,
+        uniqueSubjects: data.uniqueSubjects || [],
+        learningDays: data.learningDays || [],
+        logicQuizzes: data.logicQuizzes || 0,
+        perfectScores: data.perfectScores || 0,
+        consecutiveCorrect: data.consecutiveCorrect || 0,
+        maxConsecutiveCorrect: data.maxConsecutiveCorrect || 0,
+        masteredSubjects: data.masteredSubjects || [],
         profilePicture: data.profilePicture || 'assets/icons/guest.svg',
         bio: data.bio || '',
         updatedAt: new Date()
