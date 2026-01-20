@@ -638,7 +638,14 @@ async function updateUserScore(username, scoreData) {
         correctAnswers: 0,
         quizzesTaken: 0,
         currentStreak: 0,
-        longestStreak: 0
+        longestStreak: 0,
+        uniqueSubjects: [],
+        learningDays: [],
+        logicQuizzes: 0,
+        perfectScores: 0,
+        consecutiveCorrect: 0,
+        maxConsecutiveCorrect: 0,
+        masteredSubjects: []
     };
 
     console.log('📚 Current user data - Total scores before:', userData.scores ? userData.scores.length : 0);
@@ -664,8 +671,50 @@ async function updateUserScore(username, scoreData) {
     userData.correctAnswers = (userData.correctAnswers || 0) + scoreData.correctAnswers;
     userData.quizzesTaken = (userData.quizzesTaken || 0) + 1;
 
-    // Update streak
+    // Track unique subjects
+    userData.uniqueSubjects = userData.uniqueSubjects || [];
+    if (scoreData.topic && !userData.uniqueSubjects.includes(scoreData.topic)) {
+        userData.uniqueSubjects.push(scoreData.topic);
+        console.log('🎯 New subject explored:', scoreData.topic, '- Total:', userData.uniqueSubjects.length);
+    }
+
+    // Track logic quizzes
+    if (scoreData.topic && scoreData.topic.toLowerCase().includes('logic')) {
+        userData.logicQuizzes = (userData.logicQuizzes || 0) + 1;
+        console.log('🧠 Logic quiz completed! Total:', userData.logicQuizzes);
+    }
+
+    // Track perfect scores (100%)
+    if (scoreData.score === 100 || scoreData.correctAnswers === scoreData.totalQuestions) {
+        userData.perfectScores = (userData.perfectScores || 0) + 1;
+        console.log('🎯 Perfect score! Total:', userData.perfectScores);
+        
+        // Track mastered subjects
+        userData.masteredSubjects = userData.masteredSubjects || [];
+        if (scoreData.topic && !userData.masteredSubjects.includes(scoreData.topic)) {
+            userData.masteredSubjects.push(scoreData.topic);
+            console.log('🏆 Subject mastered:', scoreData.topic);
+        }
+    }
+
+    // Track consecutive correct answers
+    if (scoreData.correctAnswers === scoreData.totalQuestions) {
+        userData.consecutiveCorrect = (userData.consecutiveCorrect || 0) + scoreData.correctAnswers;
+    } else {
+        userData.consecutiveCorrect = scoreData.correctAnswers;
+    }
+    userData.maxConsecutiveCorrect = Math.max(userData.maxConsecutiveCorrect || 0, userData.consecutiveCorrect);
+    console.log('📈 Consecutive correct:', userData.consecutiveCorrect, 'Max:', userData.maxConsecutiveCorrect);
+
+    // Track unique learning days
     const today = new Date().toDateString();
+    userData.learningDays = userData.learningDays || [];
+    if (!userData.learningDays.includes(today)) {
+        userData.learningDays.push(today);
+        console.log('📅 Learning days:', userData.learningDays.length);
+    }
+
+    // Update streak
     const lastDate = userData.lastQuizDate ? new Date(userData.lastQuizDate).toDateString() : null;
     
     if (lastDate === today) {
@@ -674,8 +723,10 @@ async function updateUserScore(username, scoreData) {
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         if (lastDate === yesterday) {
             userData.currentStreak = (userData.currentStreak || 0) + 1;
+            console.log('🔥 Streak continues:', userData.currentStreak, 'days');
         } else {
             userData.currentStreak = 1;
+            console.log('🆕 New streak started!');
         }
         userData.longestStreak = Math.max(userData.longestStreak || 0, userData.currentStreak);
     }
