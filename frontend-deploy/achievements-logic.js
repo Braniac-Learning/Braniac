@@ -209,14 +209,15 @@ async function updateAchievementsUI() {
 
 // Create achievement card HTML
 function createAchievementCardHTML(achievement, isObtained) {
-  const status = isObtained ? '✓' : '◌';
-  const className = isObtained ? 'obtained' : 'unobtained';
-  
   // Calculate progress percentage for ring
   const progressMatch = achievement.progress.match(/(\d+)\s*\/\s*(\d+)/);
   const percentage = progressMatch 
     ? (parseInt(progressMatch[1]) / parseInt(progressMatch[2])) * 100 
     : (isObtained ? 100 : 0);
+  
+  // Status icon: ✓ if obtained, ● (filled circle) if progress > 0%, ◌ (empty circle) if 0%
+  const status = isObtained ? '✓' : (percentage > 0 ? '●' : '◌');
+  const className = isObtained ? 'obtained' : 'unobtained';
   
   // SVG circle calculations (radius 40, circumference = 2πr)
   const radius = 40;
