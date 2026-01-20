@@ -205,3 +205,60 @@ h1 {
   margin-bottom: 2rem;
   line-height: 1.5;
 }
+
+/* Progress Ring Styles */
+.badge-icon-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle-bg {
+  fill: none;
+  stroke: #E0E0E0;
+  stroke-width: 4;
+}
+
+.progress-ring-circle {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.badge-icon {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.badge-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Obtained achievements - no ring wrapper needed */
+.obtained .badge-icon-wrapper {
+  width: 70px;
+  height: 70px;
+}
+
+.obtained .badge-icon {
+  width: 70px;
+  height: 70px;
+}
