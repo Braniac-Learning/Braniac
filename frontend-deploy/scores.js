@@ -25,6 +25,32 @@ document.addEventListener('DOMContentLoaded', () => {
    * RENDER SCORES - Load from backend if logged in, otherwise from localStorage
    */
   loadAndRenderScores();
+  
+  /**
+   * AUTO-REFRESH SCORES
+   * Refresh scores when page becomes visible or when storage changes
+   */
+  // Reload scores when page becomes visible (user returns to tab)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      console.log('🔄 Page visible - refreshing scores...');
+      loadAndRenderScores();
+    }
+  });
+  
+  // Listen for storage changes from other tabs/windows
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'userScores') {
+      console.log('🔄 Scores updated in another tab - refreshing...');
+      loadAndRenderScores();
+    }
+  });
+  
+  // Refresh scores when page gets focus
+  window.addEventListener('focus', () => {
+    console.log('🔄 Page focused - refreshing scores...');
+    loadAndRenderScores();
+  });
 });
 
 async function loadAndRenderScores() {

@@ -386,7 +386,7 @@ function goHome() {
 }
 
 // Save score to localStorage
-function saveScore(scoreData) {
+async function saveScore(scoreData) {
     try {
         // Save to localStorage for immediate access
         const scores = JSON.parse(localStorage.getItem('userScores')) || [];
@@ -400,7 +400,12 @@ function saveScore(scoreData) {
         localStorage.setItem('userScores', JSON.stringify(scores));
         
         // Also save to backend/MongoDB
-        saveScoreToBackend(scoreData);
+        const result = await saveScoreToBackend(scoreData);
+        
+        // Dispatch custom event to notify other pages
+        window.dispatchEvent(new CustomEvent('scoreUpdated', { detail: scoreData }));
+        
+        return result;
     } catch (error) {
         console.error('Error saving score:', error);
     }
@@ -436,11 +441,15 @@ async function saveScoreToBackend(scoreData) {
         });
         
         if (response.ok) {
-            console.log('Score saved to database successfully');
+            console.log('✅ Score saved to database successfully');
+            const result = await response.json();
+            return result;
         } else {
-            console.error('Failed to save score to database:', response.status);
+            console.error('❌ Failed to save score to database:', response.status);
+            return null;
         }
     } catch (error) {
-        console.error('Error saving score to backend:', error);
+        console.error('❌ Error saving score to backend:', error);
+        return null;
     }
 }
