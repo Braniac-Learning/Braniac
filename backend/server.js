@@ -638,7 +638,9 @@ async function updateUserScore(username, scoreData) {
         correctAnswers: 0,
         quizzesTaken: 0,
         currentStreak: 0,
-        longestStreak: 0
+        longestStreak: 0,
+        perfectScores: 0,
+        logicQuizzes: 0
     };
 
     console.log('📚 Current user data - Total scores before:', userData.scores ? userData.scores.length : 0);
@@ -664,6 +666,18 @@ async function updateUserScore(username, scoreData) {
     userData.correctAnswers = (userData.correctAnswers || 0) + scoreData.correctAnswers;
     userData.quizzesTaken = (userData.quizzesTaken || 0) + 1;
 
+    // Track perfect scores (100%)
+    if (scoreData.score === 100 || scoreData.correctAnswers === scoreData.totalQuestions) {
+        userData.perfectScores = (userData.perfectScores || 0) + 1;
+        console.log('🎯 Perfect score! Total perfect scores:', userData.perfectScores);
+    }
+
+    // Track logic quizzes
+    if (scoreData.topic && scoreData.topic.toLowerCase().includes('logic')) {
+        userData.logicQuizzes = (userData.logicQuizzes || 0) + 1;
+        console.log('🧠 Logic quiz! Total logic quizzes:', userData.logicQuizzes);
+    }
+
     // Update streak
     const today = new Date().toDateString();
     const lastDate = userData.lastQuizDate ? new Date(userData.lastQuizDate).toDateString() : null;
@@ -674,8 +688,10 @@ async function updateUserScore(username, scoreData) {
         const yesterday = new Date(Date.now() - 86400000).toDateString();
         if (lastDate === yesterday) {
             userData.currentStreak = (userData.currentStreak || 0) + 1;
+            console.log('🔥 Streak continues! Current:', userData.currentStreak);
         } else {
             userData.currentStreak = 1;
+            console.log('🆕 New streak started!');
         }
         userData.longestStreak = Math.max(userData.longestStreak || 0, userData.currentStreak);
     }
