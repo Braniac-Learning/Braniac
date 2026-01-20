@@ -726,8 +726,13 @@ app.post('/api/auth/register', async (req, res) => {
         const token = createSessionToken(normalized);
         await saveSession(token, normalized);
 
-        // Set HttpOnly cookie
-        res.cookie('session', token, { httpOnly: true, sameSite: 'lax' });
+        // Set HttpOnly cookie with cross-origin support
+        res.cookie('session', token, { 
+            httpOnly: true, 
+            sameSite: 'none', 
+            secure: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
         return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
     } catch (err) {
@@ -766,7 +771,12 @@ app.post('/api/auth/login', async (req, res) => {
 
         const token = createSessionToken(normalized);
         await saveSession(token, normalized);
-        res.cookie('session', token, { httpOnly: true, sameSite: 'lax' });
+        res.cookie('session', token, { 
+            httpOnly: true, 
+            sameSite: 'none', 
+            secure: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
 
         return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
     } catch (err) {
