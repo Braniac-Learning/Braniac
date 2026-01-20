@@ -577,6 +577,9 @@ async function getUserData(username) {
 }
 
 async function saveUserData(username, data) {
+    console.log('💾 saveUserData called for:', username);
+    console.log('📊 Data to save - Scores count:', data.scores ? data.scores.length : 0);
+    
     const userData = {
         username,
         scores: data.scores || [],
@@ -595,22 +598,34 @@ async function saveUserData(username, data) {
 
     if (userDataCollection) {
         try {
-            await userDataCollection.updateOne(
+            console.log('🗄️  Saving to MongoDB...');
+            const result = await userDataCollection.updateOne(
                 { username },
                 { $set: userData },
                 { upsert: true }
             );
+            console.log('✅ MongoDB save result:', {
+                matched: result.matchedCount,
+                modified: result.modifiedCount,
+                upserted: result.upsertedCount
+            });
             return true;
         } catch (err) {
-            console.error('Error saving user data to DB:', err);
+            console.error('❌ Error saving user data to DB:', err);
         }
+    } else {
+        console.log('⚠️  userDataCollection not available - using in-memory fallback');
     }
     // Fallback to in-memory
     inMemoryUserData.set(username, userData);
+    console.log('💾 Saved to in-memory storage');
     return true;
 }
 
 async function updateUserScore(username, scoreData) {
+    console.log('🔄 updateUserScore called for:', username);
+    console.log('📊 Score data:', scoreData);
+    
     let userData = await getUserData(username) || {
         scores: [],
         achievements: [],
@@ -621,6 +636,8 @@ async function updateUserScore(username, scoreData) {
         currentStreak: 0,
         longestStreak: 0
     };
+
+    console.log('📚 Current user data - Total scores before:', userData.scores ? userData.scores.length : 0);
 
     // Add new score
     userData.scores = userData.scores || [];
@@ -634,6 +651,8 @@ async function updateUserScore(username, scoreData) {
         date: scoreData.date || new Date(),
         timeSpent: scoreData.timeSpent || 0
     });
+
+    console.log('📚 Total scores after adding:', userData.scores.length);
 
     // Update stats
     userData.totalPoints = (userData.totalPoints || 0) + scoreData.score;
@@ -658,7 +677,10 @@ async function updateUserScore(username, scoreData) {
     }
     userData.lastQuizDate = new Date();
 
-    await saveUserData(username, userData);
+    console.log('💾 Calling saveUserData...');
+    const saveResult = await saveUserData(username, userData);
+    console.log('✅ saveUserData completed:', saveResult ? 'Success' : 'Failed');
+    
     return userData;
 }
 
@@ -910,17 +932,25 @@ app.post('/api/user/data', async (req, res) => {
 // Submit quiz score
 app.post('/api/user/score', async (req, res) => {
     try {
+        console.log('📥 Score submission request received');
+        console.log('📋 Request body:', JSON.stringify(req.body, null, 2));
+        
         const user = await getUserFromRequest(req);
         if (!user) {
+            console.log('❌ Score submission failed: User not authenticated');
             return res.status(401).json({ error: 'Not authenticated' });
         }
+
+        console.log('✅ User authenticated:', user.username);
 
         const { topic, score, totalQuestions, correctAnswers, difficulty, timeSpent, quizType, date } = req.body;
         
         if (topic === undefined || score === undefined || totalQuestions === undefined || correctAnswers === undefined) {
+            console.log('❌ Score submission failed: Missing required fields');
             return res.status(400).json({ error: 'Missing required score data' });
         }
 
+        console.log('💾 Saving score for user:', user.username);
         const updatedData = await updateUserScore(user.username, {
             topic,
             score,
@@ -932,6 +962,7 @@ app.post('/api/user/score', async (req, res) => {
             date: date || new Date()
         });
 
+        console.log('✅ Score saved successfully. Total scores:', updatedData.scores.length);
         return res.json({ ok: true, data: updatedData });
     } catch (err) {
         console.error('Error saving score:', err);
