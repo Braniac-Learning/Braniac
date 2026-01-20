@@ -125,13 +125,25 @@ h1 {
   gap: 1rem;
 }
 
-.badge {
-  font-size: 1.5rem;
-}
-
 .card-text {
   flex: 1;
   text-align: left;
+  order: 1;
+}
+
+.status {
+  font-weight: bold;
+  order: 2;
+}
+
+.badge-icon-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  order: 3;
 }
 
 .card-text span {
@@ -207,14 +219,6 @@ h1 {
 }
 
 /* Progress Ring Styles */
-.badge-icon-wrapper {
-  position: relative;
-  width: 90px;
-  height: 90px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
 .progress-ring {
   position: absolute;
