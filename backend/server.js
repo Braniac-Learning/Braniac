@@ -91,17 +91,128 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
         advanced: "Create ADVANCED level questions requiring deep understanding, analysis, and application. Include complex scenarios and multi-step reasoning.",
         expert: "Create EXPERT level questions that are challenging and require specialized knowledge, critical thinking, synthesis, and advanced problem-solving skills."
     };
+
+    // Analyze topic to determine question approach
+    const topicLower = topic.toLowerCase();
+    let contextualGuidance = '';
+
+    // Mathematics and STEM subjects - focus on problem-solving unless history/theory is mentioned
+    if (topicLower.match(/math|algebra|geometry|calculus|trigonometry|statistics|arithmetic/)) {
+        if (topicLower.match(/history|evolution|biography|development|origin|story/)) {
+            contextualGuidance = `
+    MATHEMATICS HISTORY/THEORY MODE:
+    - Focus on historical developments, mathematicians, and theoretical concepts
+    - Ask about the origins and evolution of mathematical ideas
+    - Include biographical and conceptual questions`;
+        } else {
+            contextualGuidance = `
+    MATHEMATICS PROBLEM-SOLVING MODE:
+    - Create DIVERSE problem-solving questions from DIFFERENT mathematical domains:
+      * Algebra: equations, inequalities, functions, systems
+      * Geometry: shapes, angles, theorems, spatial reasoning
+      * Calculus: derivatives, integrals, limits, rates of change
+      * Trigonometry: angles, ratios, identities, waves
+      * Statistics: probability, data analysis, distributions
+      * Number theory: primes, factors, sequences, patterns
+    - Vary contexts: word problems, pure math, real-world applications
+    - Mix computational and conceptual understanding questions
+    - AVOID repetitive question patterns - each should test different skills`;
+        }
+    }
+    // Science subjects
+    else if (topicLower.match(/physics|chemistry|biology|science/)) {
+        if (topicLower.match(/history|biography|discovery|evolution|development/)) {
+            contextualGuidance = `
+    SCIENCE HISTORY MODE:
+    - Focus on discoveries, scientists, and historical developments
+    - Ask about experiments, breakthroughs, and scientific evolution`;
+        } else {
+            contextualGuidance = `
+    SCIENCE PROBLEM-SOLVING MODE:
+    - Create diverse questions covering different areas of the subject
+    - Mix theoretical concepts with practical applications
+    - Include calculations, experiments, and conceptual understanding
+    - Cover different subtopics and domains within the subject`;
+        }
+    }
+    // Anime/Entertainment
+    else if (topicLower.match(/anime|manga|show|series|jujutsu kaisen|naruto|one piece|demon slayer|attack on titan/)) {
+        contextualGuidance = `
+    ANIME/ENTERTAINMENT DEEP-DIVE MODE:
+    - Ask about SPECIFIC story arcs, seasons, and time periods
+    - Include controversial fandom topics and debates
+    - Character power rankings and matchups ("Who was strongest during X arc?")
+    - Plot twists, character development, and story progression
+    - Relationships, motivations, and character dynamics
+    - Memorable scenes, quotes, and iconic moments
+    - Fan theories and interpretations
+    - Compare different arcs or character versions
+    - Mix lore questions with analytical/opinion-based questions`;
+    }
+    // History
+    else if (topicLower.match(/history|historical|war|revolution|empire|civilization/)) {
+        contextualGuidance = `
+    HISTORY DEEP-DIVE MODE:
+    - Cover different time periods, events, and geographical regions
+    - Mix factual questions with analytical ones (causes, effects, significance)
+    - Ask about key figures, decisions, and turning points
+    - Include social, political, economic, and cultural aspects
+    - Compare different historical periods or events`;
+    }
+    // Literature
+    else if (topicLower.match(/literature|novel|book|poem|poetry|author|writer/)) {
+        contextualGuidance = `
+    LITERATURE ANALYSIS MODE:
+    - Ask about themes, symbolism, and literary devices
+    - Character analysis and development
+    - Plot events and their significance
+    - Author's style and techniques
+    - Historical and cultural context
+    - Interpretations and critical analysis`;
+    }
+    // Programming/Technology
+    else if (topicLower.match(/programming|coding|software|javascript|python|java|web|technology|computer/)) {
+        if (topicLower.match(/history|evolution|biography|story/)) {
+            contextualGuidance = `
+    TECH HISTORY MODE:
+    - Focus on technological evolution and pioneers
+    - Ask about development of languages, frameworks, and tools`;
+        } else {
+            contextualGuidance = `
+    PROGRAMMING PRACTICAL MODE:
+    - Include code snippets and problem-solving questions
+    - Cover different concepts: syntax, algorithms, data structures, patterns
+    - Mix theoretical knowledge with practical application
+    - Include debugging, optimization, and best practices
+    - Vary between different aspects of the technology`;
+        }
+    }
+    // General/Other topics
+    else {
+        contextualGuidance = `
+    CONTEXTUAL DEEP-DIVE MODE:
+    - Create questions from MULTIPLE perspectives and subtopics within "${topic}"
+    - Cover different aspects, categories, and dimensions of the subject
+    - Mix factual recall with analytical and application questions
+    - Include diverse contexts and scenarios
+    - Ensure variety in question focus and approach`;
+    }
     
     const prompt = `Generate ${questionCount} multiple-choice quiz questions about "${topic}". 
     
     DIFFICULTY LEVEL: ${difficultyPrompts[difficulty]}
+    ${contextualGuidance}
+    
+    DIVERSITY REQUIREMENTS:
+    - Each question should test a DIFFERENT aspect or subtopic
+    - Avoid repetitive question patterns or similar scenarios
+    - Cover the breadth of the topic with varied angles
+    - Make questions engaging, thought-provoking, and contextually rich
     
     CREATIVITY REQUIREMENTS:
-    - Make questions engaging and thought-provoking
     - Use real-world scenarios and practical applications when possible
     - Include creative distractors (wrong answers) that are plausible but clearly incorrect
-    - Vary question types: definitions, applications, comparisons, problem-solving, scenarios
-    - Use interesting examples and case studies
+    - Use interesting examples, case studies, and specific situations
     - Make options witty but educational where appropriate
     - Keep answer options CONCISE (maximum 5-7 words each)
     - Use short phrases instead of full sentences for options
@@ -193,6 +304,12 @@ async function generateQuizFromDocument(fileContent, questionCount, difficulty =
     3. **SPECIFIC CONTENT**: Ask about actual content from each section, not generic document questions
     4. **AVOID GENERIC QUESTIONS**: Don't ask "What is this document about?" or "Who wrote this?"
     5. **TARGET SPECIFIC DETAILS**: Focus on facts, concepts, examples, and ideas from different sections
+    6. **CONTEXTUAL DEPTH**: Apply the same contextual approach as topic-based quizzes:
+       - For technical/math documents: Create problem-solving questions from actual examples
+       - For narrative documents: Ask about plot, characters, themes, and specific events
+       - For scientific documents: Test understanding through applications and scenarios
+       - For historical documents: Cover different time periods, events, and perspectives
+       - For instructional documents: Test application and understanding of procedures
 
     DIFFICULTY LEVEL: ${difficultyPrompts[difficulty]}
 
