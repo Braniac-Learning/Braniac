@@ -197,6 +197,9 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
     - Include diverse contexts and scenarios
     - Ensure variety in question focus and approach`;
     }
+
+    console.log(`🎯 Generating quiz for topic: "${topic}"`);
+    console.log(`📊 Detected mode: ${contextualGuidance ? contextualGuidance.split('MODE:')[0].split('\n')[1].trim() : 'GENERAL'}`);
     
     const prompt = `Generate ${questionCount} multiple-choice quiz questions about "${topic}". 
     
