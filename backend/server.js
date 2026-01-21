@@ -206,11 +206,20 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
     DIFFICULTY LEVEL: ${difficultyPrompts[difficulty]}
     ${contextualGuidance}
     
-    DIVERSITY REQUIREMENTS:
-    - Each question should test a DIFFERENT aspect or subtopic
-    - Avoid repetitive question patterns or similar scenarios
-    - Cover the breadth of the topic with varied angles
-    - Make questions engaging, thought-provoking, and contextually rich
+    🚨 CRITICAL DIVERSITY REQUIREMENTS - MUST FOLLOW:
+    - Question 1, 2, 3, etc. must each focus on COMPLETELY DIFFERENT subtopics
+    - NO TWO QUESTIONS should test the same concept or use similar wording
+    - If generating 10 questions, you need 10 DIFFERENT aspects of the topic
+    - FORBIDDEN: Asking the same type of question with different numbers
+    - REQUIRED: Maximum variety in question focus, approach, and context
+    
+    Example for Mathematics:
+    ❌ BAD: All questions about solving equations with different numbers
+    ✅ GOOD: Q1-Algebra equation, Q2-Geometry area, Q3-Calculus derivative, Q4-Trig ratio, Q5-Probability, Q6-Number patterns, Q7-Functions, Q8-Word problem, Q9-Theorem, Q10-Graph interpretation
+    
+    Example for Anime (Jujutsu Kaisen):
+    ❌ BAD: All questions about character abilities
+    ✅ GOOD: Q1-Shibuya arc events, Q2-Power ranking debate, Q3-Character relationship, Q4-Memorable quote, Q5-Domain expansion, Q6-Cursed technique, Q7-Plot twist, Q8-Character development, Q9-Arc comparison, Q10-Fandom controversy
     
     CREATIVITY REQUIREMENTS:
     - Use real-world scenarios and practical applications when possible
