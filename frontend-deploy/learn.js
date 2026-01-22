@@ -47,9 +47,16 @@ async function generateTopicQuiz() {
         return;
     }
 
+    console.log('🎯 Starting quiz generation...');
+    console.log('   Topic:', topic);
+    console.log('   Questions:', questionCount);
+    console.log('   Difficulty:', difficulty);
+    console.log('   API URL:', `${API_BASE}/api/generate-quiz/topic`);
+
     showLoading('Creating your quiz...');
 
     try {
+        console.log('📡 Sending request to backend...');
         const response = await fetch(`${API_BASE}/api/generate-quiz/topic`, {
             method: 'POST',
             headers: {
@@ -62,9 +69,17 @@ async function generateTopicQuiz() {
             })
         });
 
-        if (!response.ok) throw new Error('Failed to create quiz');
+        console.log('📥 Response received:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error response:', errorText);
+            throw new Error('Failed to create quiz');
+        }
         
         const data = await response.json();
+        console.log('✅ Quiz data received:', data.questions.length, 'questions');
+        
         quizData.questions = data.questions;
         quizData.currentQuestion = 0;
         quizData.score = 0;
@@ -75,6 +90,7 @@ async function generateTopicQuiz() {
         
         startQuiz();
     } catch (error) {
+        console.error('💥 Quiz generation failed:', error);
         showMessage('Error creating quiz: ' + error.message);
     }
 }
