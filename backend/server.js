@@ -1015,9 +1015,14 @@ app.post('/api/auth/register', async (req, res) => {
 // Login route
 app.post('/api/auth/login', async (req, res) => {
     try {
+        console.log('🔐 Login attempt received');
+        console.log('   Headers:', req.headers['content-type']);
+        console.log('   Body:', req.body);
+        
         const { username, password } = req.body || {};
 
         if (!username || !password) {
+            console.log('   ❌ Missing username or password');
             return res.status(400).json({ error: 'Username and password are required' });
         }
 
