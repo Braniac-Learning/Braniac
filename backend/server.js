@@ -153,7 +153,16 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
     }
     
     // Fallback to original system
-    return generateQuizFromTopicOriginal(topic, questionCount, difficulty);
+    console.log('📌 Using fallback generation system...');
+    const result = await generateQuizFromTopicOriginal(topic, questionCount, difficulty);
+    
+    // Final safety check - ensure we never return empty
+    if (!result || !Array.isArray(result) || result.length === 0) {
+        console.error('⚠️ Both systems failed! Returning mock data...');
+        return generateMockQuiz(topic, questionCount, difficulty);
+    }
+    
+    return result;
 }
 
 // Keep original function as fallback
