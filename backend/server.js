@@ -1333,12 +1333,23 @@ app.post('/api/generate-quiz/topic', async (req, res) => {
             return res.status(400).json({ error: 'Topic and question count are required' });
         }
         
-        console.log(`Generating quiz for topic: ${topic}, questions: ${questionCount}, difficulty: ${difficulty || 'intermediate'}`);
+        console.log(`\n📝 Quiz generation request received:`);
+        console.log(`   Topic: ${topic}`);
+        console.log(`   Questions: ${questionCount}`);
+        console.log(`   Difficulty: ${difficulty || 'intermediate'}`);
+        
         const questions = await generateQuizFromTopic(topic, questionCount, difficulty);
+        
+        console.log(`📤 Returning ${questions?.length || 0} questions to frontend`);
+        if (questions && questions.length > 0) {
+            console.log(`   First question: ${questions[0]?.question?.substring(0, 50)}...`);
+        } else {
+            console.log(`   ⚠️ WARNING: No questions generated!`);
+        }
         
         res.json({ questions });
     } catch (error) {
-        console.error('Error generating topic quiz:', error);
+        console.error('💥 Error generating topic quiz:', error);
         res.status(500).json({ error: error.message });
     }
 });

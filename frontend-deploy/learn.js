@@ -78,7 +78,13 @@ async function generateTopicQuiz() {
         }
         
         const data = await response.json();
-        console.log('✅ Quiz data received:', data.questions.length, 'questions');
+        console.log('✅ Full response data:', data);
+        console.log('✅ Quiz questions:', data.questions);
+        console.log('✅ Quiz data received:', data.questions?.length || 0, 'questions');
+        
+        if (!data.questions || data.questions.length === 0) {
+            throw new Error('No questions received from backend');
+        }
         
         quizData.questions = data.questions;
         quizData.currentQuestion = 0;
