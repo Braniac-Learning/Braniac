@@ -78,10 +78,68 @@ function generatePin() {
 }
 
 // Gemini API functions
+// Import new modular system
+const { classifyTopic } = require('./src/ai/classifyTopic');
+const { resolveContext } = require('./src/ai/contextResolver');
+const { createDistributionPlan } = require('./src/logic/diversity');
+const { generateWithPlan } = require('./src/ai/generateQuestions');
+
 async function generateQuizFromTopic(topic, questionCount, difficulty = 'intermediate') {
     if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || GEMINI_API_KEY.startsWith('ghp_')) {
         // Return mock data for testing when API key is not properly configured
         console.log('Using mock data for quiz generation - configure a valid Gemini API key for real functionality');
+        return generateMockQuiz(topic, questionCount, difficulty);
+    }
+
+    try {
+        console.log(`\n${'='.repeat(60)}`);
+        console.log(`🎯 NEW CONTEXTUAL SYSTEM - Generating quiz for: "${topic}"`);
+        console.log(`${'='.repeat(60)}`);
+        
+        // Step 1: Classify the topic
+        console.log(`\n1️⃣ Classifying topic...`);
+        const classification = await classifyTopic(topic, GEMINI_API_KEY);
+        console.log(`   Category: ${classification.category}`);
+        console.log(`   Focus: ${classification.focus}`);
+        console.log(`   Subject Area: ${classification.subjectArea}`);
+        
+        // Step 2: Resolve context (subdomains + question modes)
+        console.log(`\n2️⃣ Resolving context...`);
+        const { subdomains, modes } = resolveContext(classification);
+        
+        // Step 3: Create diversity-enforced distribution plan
+        console.log(`\n3️⃣ Creating distribution plan...`);
+        const plan = createDistributionPlan(subdomains, modes, questionCount);
+        plan.forEach((item, i) => {
+            console.log(`   Q${i + 1}: ${item.subdomain} (${item.mode})`);
+        });
+        
+        // Step 4: Generate questions following the plan
+        console.log(`\n4️⃣ Generating questions...`);
+        const questions = await generateWithPlan({
+            topic: classification.topic,
+            plan,
+            difficulty,
+            apiKey: GEMINI_API_KEY
+        });
+        
+        console.log(`${'='.repeat(60)}`);
+        console.log(`✅ CONTEXTUAL GENERATION COMPLETE`);
+        console.log(`${'='.repeat(60)}\n`);
+        
+        return shuffleAnswers(questions);
+        
+    } catch (error) {
+        console.error('❌ Contextual generation failed:', error);
+        console.log('⚠️  Falling back to original system...\n');
+        // Fallback to original system
+        return generateQuizFromTopicOriginal(topic, questionCount, difficulty);
+    }
+}
+
+// Keep original function as fallback
+async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 'intermediate') {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || GEMINI_API_KEY.startsWith('ghp_')) {
         return generateMockQuiz(topic, questionCount, difficulty);
     }
     
