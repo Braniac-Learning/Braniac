@@ -45,11 +45,18 @@ navItems.forEach(item => {
     const target = activeBtn.dataset.target;
     const activeList = document.getElementById(target);
 
-    if (target === 'obtained' && realAchievements.length === 0) {
-      activeList.classList.remove('active'); // Hide mock cards
-      noDataView.classList.remove('hidden'); // Show "No Data"
+    if (target === 'obtained') {
+      if (realAchievements.length === 0) {
+        // No real achievements - hide the list and show no data
+        activeList.classList.remove('active');
+        noDataView.classList.remove('hidden');
+      } else {
+        // Has achievements - show the list
+        activeList.classList.add('active');
+        noDataView.classList.add('hidden');
+      }
     } else {
-      // Always show data for "Unobtained" or if "Obtained" has real data
+      // Unobtained tab - always show
       activeList.classList.add('active');
       noDataView.classList.add('hidden');
     }
@@ -61,7 +68,6 @@ navItems.forEach(item => {
       document.querySelectorAll('.achievement-list').forEach(l => l.classList.remove('active'));
       
       btn.classList.add('active');
-      document.getElementById(btn.dataset.target).classList.add('active');
       
       updateView();
     });
