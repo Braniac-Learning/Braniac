@@ -1,8 +1,10 @@
-const session = JSON.parse(localStorage.getItem('braniacSession'));
+document.addEventListener('DOMContentLoaded', () => {
+  const session = JSON.parse(localStorage.getItem('braniacSession'));
 
-if (!session) {
-  window.location.href = 'index.html';
-}
+  if (!session) {
+    window.location.href = 'index.html';
+    return;
+  }
 
 // Toggle obtained / unobtained
 document.querySelectorAll('.toggle-btn').forEach(btn => {
@@ -32,7 +34,6 @@ navItems.forEach(item => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
   const noDataView = document.getElementById('noDataView');
   const toggleBtns = document.querySelectorAll('.toggle-btn');
   
