@@ -92,16 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   triggerElement?.addEventListener('click', (e) => {
     e.stopPropagation();
-    
-    // If guest, show auth modal instead of dropdown
-    if (session.type === 'guest') {
-      const authOverlay = document.getElementById('authOverlay');
-      if (authOverlay) {
-        authOverlay.classList.add('active');
-      }
-    } else {
-      navProfile.classList.toggle('show');
-    }
+    navProfile.classList.toggle('show');
   });
 
   document.addEventListener('click', (e) => {

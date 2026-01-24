@@ -1287,12 +1287,23 @@ app.post('/api/user/profile', async (req, res) => {
         const { profilePicture, bio } = req.body;
         
         let userData = await getUserData(user.username) || {};
-        if (profilePicture !== undefined) userData.profilePicture = profilePicture;
+        
+        // Validate and store profile picture (base64 string)
+        if (profilePicture !== undefined) {
+            // Check if it's a valid base64 image or URL
+            if (profilePicture.startsWith('data:image/') || profilePicture.startsWith('http') || profilePicture.startsWith('assets/')) {
+                userData.profilePicture = profilePicture;
+                console.log(`✅ Profile picture updated for ${user.username}`);
+            } else {
+                return res.status(400).json({ error: 'Invalid profile picture format' });
+            }
+        }
+        
         if (bio !== undefined) userData.bio = bio;
         
         await saveUserData(user.username, userData);
 
-        return res.json({ ok: true, message: 'Profile updated' });
+        return res.json({ ok: true, message: 'Profile updated', data: userData });
     } catch (err) {
         console.error('Error updating profile:', err);
         return res.status(500).json({ error: 'Server error' });
