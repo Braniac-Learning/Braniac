@@ -149,6 +149,11 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
             console.log(`✅ CONTEXTUAL GENERATION COMPLETE`);
             console.log(`${'='.repeat(60)}\n`);
             
+            // If no questions generated, throw error to trigger fallback
+            if (!questions || questions.length === 0) {
+                throw new Error('Contextual system returned 0 questions');
+            }
+            
             return shuffleAnswers(questions);
             
         } catch (error) {
