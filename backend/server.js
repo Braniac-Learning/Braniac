@@ -100,9 +100,14 @@ try {
 }
 
 async function generateQuizFromTopic(topic, questionCount, difficulty = 'intermediate') {
+    console.log(`\n🔑 API Key Check:`);
+    console.log(`   Key exists: ${!!GEMINI_API_KEY}`);
+    console.log(`   Key length: ${GEMINI_API_KEY ? GEMINI_API_KEY.length : 0}`);
+    console.log(`   Key preview: ${GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 20) + '...' : 'MISSING'}`);
+    
     if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || GEMINI_API_KEY.startsWith('ghp_')) {
         // Return mock data for testing when API key is not properly configured
-        console.log('Using mock data for quiz generation - configure a valid Gemini API key for real functionality');
+        console.log('❌ Invalid API key detected - Using mock data for quiz generation');
         return generateMockQuiz(topic, questionCount, difficulty);
     }
 
@@ -338,6 +343,9 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
     Make sure the questions are educational, varied in difficulty within the ${difficulty} level, and cover different aspects of the topic with creative scenarios.`;
     
     try {
+        console.log(`\n🌐 Calling Gemini API...`);
+        console.log(`   Endpoint: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`);
+        
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
@@ -352,26 +360,39 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
             })
         });
         
+        console.log(`\n📡 API Response:`);
+        console.log(`   Status: ${response.status}`);
+        console.log(`   Status Text: ${response.statusText}`);
+        
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Gemini API Error Response (Topic):', response.status, errorText);
+            console.error('❌ Gemini API Error Response (Topic):', response.status, errorText);
             throw new Error(`Failed to generate quiz from Gemini API: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();
+        console.log(`\n✅ API call successful!`);
+        console.log(`   Response has candidates: ${!!data.candidates}`);
+        console.log(`   Candidates length: ${data.candidates?.length || 0}`);
+        
         const text = data.candidates[0].content.parts[0].text;
+        console.log(`   Response text length: ${text.length} characters`);
+        console.log(`   Response preview: ${text.substring(0, 100)}...`);
         
         // Extract JSON from the response
         const jsonMatch = text.match(/\[[\s\S]*\]/);
         if (jsonMatch) {
             const questions = JSON.parse(jsonMatch[0]);
+            console.log(`\n🎯 Successfully parsed ${questions.length} questions from API`);
+            console.log(`   First question: ${questions[0]?.question?.substring(0, 60)}...`);
             return shuffleAnswers(questions);
         } else {
+            console.error('❌ Could not find JSON array in API response');
             throw new Error('Invalid response format from Gemini API');
         }
     } catch (error) {
-        console.error('Error generating quiz:', error);
-        console.log('Falling back to mock data due to API error');
+        console.error('💥 Error generating quiz:', error);
+        console.log('⚠️  Falling back to mock data due to API error');
         // Fallback to mock data if API fails
         return generateMockQuiz(topic, questionCount, difficulty);
     }
