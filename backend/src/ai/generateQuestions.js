@@ -75,6 +75,8 @@ No markdown, no explanation, ONLY the JSON array.`;
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`   ❌ API Response: ${response.status} - ${errorBody.substring(0, 200)}`);
       throw new Error(`API error: ${response.status}`);
     }
 

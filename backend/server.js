@@ -152,7 +152,7 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
             return shuffleAnswers(questions);
             
         } catch (error) {
-            console.error('❌ Contextual generation failed:', error);
+            console.error('❌ Contextual generation failed:', error.message);
             console.log('⚠️  Falling back to original system...\n');
         }
     }
@@ -160,6 +160,8 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
     // Fallback to original system
     console.log('📌 Using fallback generation system...');
     const result = await generateQuizFromTopicOriginal(topic, questionCount, difficulty);
+    
+    console.log(`📦 Original system returned ${result?.length || 0} questions`);
     
     // Final safety check - ensure we never return empty
     if (!result || !Array.isArray(result) || result.length === 0) {
