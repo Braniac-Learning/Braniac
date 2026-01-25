@@ -12,7 +12,7 @@ require('dotenv').config();
 
 // Gemini API key should be provided via environment variable for security.
 // Set the environment variable GEMINI_API_KEY in production (do NOT commit keys).
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyBFUS3-g4sizVOt4cKUUM7yT1C4wvfGOe8';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_HERE';
 
 const app = express();
 const server = http.createServer(app);
@@ -100,14 +100,9 @@ try {
 }
 
 async function generateQuizFromTopic(topic, questionCount, difficulty = 'intermediate') {
-    console.log(`\n🔑 API Key Check:`);
-    console.log(`   Key exists: ${!!GEMINI_API_KEY}`);
-    console.log(`   Key length: ${GEMINI_API_KEY ? GEMINI_API_KEY.length : 0}`);
-    console.log(`   Key preview: ${GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 20) + '...' : 'MISSING'}`);
-    
     if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || GEMINI_API_KEY.startsWith('ghp_')) {
         // Return mock data for testing when API key is not properly configured
-        console.log('❌ Invalid API key detected - Using mock data for quiz generation');
+        console.log('Using mock data for quiz generation - configure a valid Gemini API key for real functionality');
         return generateMockQuiz(topic, questionCount, difficulty);
     }
 
@@ -149,15 +144,10 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
             console.log(`✅ CONTEXTUAL GENERATION COMPLETE`);
             console.log(`${'='.repeat(60)}\n`);
             
-            // If no questions generated, throw error to trigger fallback
-            if (!questions || questions.length === 0) {
-                throw new Error('Contextual system returned 0 questions');
-            }
-            
             return shuffleAnswers(questions);
             
         } catch (error) {
-            console.error('❌ Contextual generation failed:', error.message);
+            console.error('❌ Contextual generation failed:', error);
             console.log('⚠️  Falling back to original system...\n');
         }
     }
@@ -165,8 +155,6 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
     // Fallback to original system
     console.log('📌 Using fallback generation system...');
     const result = await generateQuizFromTopicOriginal(topic, questionCount, difficulty);
-    
-    console.log(`📦 Original system returned ${result?.length || 0} questions`);
     
     // Final safety check - ensure we never return empty
     if (!result || !Array.isArray(result) || result.length === 0) {
@@ -350,10 +338,7 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
     Make sure the questions are educational, varied in difficulty within the ${difficulty} level, and cover different aspects of the topic with creative scenarios.`;
     
     try {
-        console.log(`\n🌐 Calling Gemini API...`);
-        console.log(`   Endpoint: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`);
-        
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -367,39 +352,26 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
             })
         });
         
-        console.log(`\n📡 API Response:`);
-        console.log(`   Status: ${response.status}`);
-        console.log(`   Status Text: ${response.statusText}`);
-        
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ Gemini API Error Response (Topic):', response.status, errorText);
+            console.error('Gemini API Error Response (Topic):', response.status, errorText);
             throw new Error(`Failed to generate quiz from Gemini API: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();
-        console.log(`\n✅ API call successful!`);
-        console.log(`   Response has candidates: ${!!data.candidates}`);
-        console.log(`   Candidates length: ${data.candidates?.length || 0}`);
-        
         const text = data.candidates[0].content.parts[0].text;
-        console.log(`   Response text length: ${text.length} characters`);
-        console.log(`   Response preview: ${text.substring(0, 100)}...`);
         
         // Extract JSON from the response
         const jsonMatch = text.match(/\[[\s\S]*\]/);
         if (jsonMatch) {
             const questions = JSON.parse(jsonMatch[0]);
-            console.log(`\n🎯 Successfully parsed ${questions.length} questions from API`);
-            console.log(`   First question: ${questions[0]?.question?.substring(0, 60)}...`);
             return shuffleAnswers(questions);
         } else {
-            console.error('❌ Could not find JSON array in API response');
             throw new Error('Invalid response format from Gemini API');
         }
     } catch (error) {
-        console.error('💥 Error generating quiz:', error);
-        console.log('⚠️  Falling back to mock data due to API error');
+        console.error('Error generating quiz:', error);
+        console.log('Falling back to mock data due to API error');
         // Fallback to mock data if API fails
         return generateMockQuiz(topic, questionCount, difficulty);
     }
@@ -488,7 +460,7 @@ async function generateQuizFromDocument(fileContent, questionCount, difficulty =
     ]`;
     
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1315,23 +1287,12 @@ app.post('/api/user/profile', async (req, res) => {
         const { profilePicture, bio } = req.body;
         
         let userData = await getUserData(user.username) || {};
-        
-        // Validate and store profile picture (base64 string)
-        if (profilePicture !== undefined) {
-            // Check if it's a valid base64 image or URL
-            if (profilePicture.startsWith('data:image/') || profilePicture.startsWith('http') || profilePicture.startsWith('assets/')) {
-                userData.profilePicture = profilePicture;
-                console.log(`✅ Profile picture updated for ${user.username}`);
-            } else {
-                return res.status(400).json({ error: 'Invalid profile picture format' });
-            }
-        }
-        
+        if (profilePicture !== undefined) userData.profilePicture = profilePicture;
         if (bio !== undefined) userData.bio = bio;
         
         await saveUserData(user.username, userData);
 
-        return res.json({ ok: true, message: 'Profile updated', data: userData });
+        return res.json({ ok: true, message: 'Profile updated' });
     } catch (err) {
         console.error('Error updating profile:', err);
         return res.status(500).json({ error: 'Server error' });
@@ -1392,22 +1353,13 @@ app.post('/api/generate-quiz/topic', async (req, res) => {
         if (questions && questions.length > 0) {
             console.log(`   First question: ${questions[0]?.question?.substring(0, 50)}...`);
         } else {
-            console.log(`   ⚠️ WARNING: No questions generated! Using mock data...`);
-            // If empty, generate mock data as last resort
-            const mockQuestions = generateMockQuiz(topic, questionCount, difficulty);
-            return res.json({ questions: mockQuestions });
+            console.log(`   ⚠️ WARNING: No questions generated!`);
         }
         
         res.json({ questions });
     } catch (error) {
         console.error('💥 Error generating topic quiz:', error);
-        // Return mock data on error
-        try {
-            const mockQuestions = generateMockQuiz(req.body.topic, req.body.questionCount, req.body.difficulty);
-            return res.json({ questions: mockQuestions });
-        } catch (mockError) {
-            return res.status(500).json({ error: error.message });
-        }
+        res.status(500).json({ error: error.message });
     }
 });
 
