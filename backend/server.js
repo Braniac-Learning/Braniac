@@ -1342,6 +1342,11 @@ app.post('/api/generate-quiz/topic', async (req, res) => {
             return res.status(400).json({ error: 'Topic and question count are required' });
         }
         
+        // Validate question count range
+        if (questionCount < 1 || questionCount > 50) {
+            return res.status(400).json({ error: 'Question count must be between 1 and 50' });
+        }
+        
         console.log(`\n📝 Quiz generation request received:`);
         console.log(`   Topic: ${topic}`);
         console.log(`   Questions: ${questionCount}`);
@@ -1393,6 +1398,11 @@ app.post('/api/generate-quiz/document', upload.single('document'), handleMulterE
         
         if (!questionCount) {
             return res.status(400).json({ error: 'Question count is required' });
+        }
+        
+        // Validate question count range
+        if (questionCount < 1 || questionCount > 50) {
+            return res.status(400).json({ error: 'Question count must be between 1 and 50' });
         }
         
         // Extract text from uploaded file

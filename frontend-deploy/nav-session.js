@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   guestLoginBtn?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent the event from bubbling up
     navProfile.classList.remove('show');
     const authOverlay = document.getElementById('authOverlay');
     authOverlay?.classList.add('active');
