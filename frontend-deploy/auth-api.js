@@ -52,6 +52,8 @@ class AuthAPI {
                 pfp: 'assets/icons/guest.svg'
             };
             localStorage.setItem('braniacSession', JSON.stringify(session));
+            // Save firstName separately for onboarding greeting
+            localStorage.setItem('braniacFirstName', data.user.firstName);
         }
         
         return data;

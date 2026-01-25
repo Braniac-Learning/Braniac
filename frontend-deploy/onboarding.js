@@ -14,7 +14,8 @@ let currentSection = document.querySelector('.onboarding-section.active');
 // HELLO, FIRST NAME GREETING
 // ===============================
 const whoAreYouHeader = document.querySelector('#whoAreYou h1');
-const firstName = localStorage.getItem('braniacFirstName');
+const session = JSON.parse(localStorage.getItem('braniacSession'));
+const firstName = session?.firstName || localStorage.getItem('braniacFirstName');
 
 if (firstName && whoAreYouHeader) {
   whoAreYouHeader.textContent = `HELLO, ${firstName.toUpperCase()}`;
