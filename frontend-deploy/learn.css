@@ -495,7 +495,7 @@ input[type="file"]::file-selector-button:hover {
     display: block !important;
 }
 
-/* 2. Center the 'YOUR RESULTS' header (which has inline flex) */
+/* 2. Center the 'YOUR RESULT' header (which has inline flex) */
 #results h2 {
     justify-content: center !important;
     text-align: center;
