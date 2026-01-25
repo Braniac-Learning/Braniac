@@ -12,7 +12,7 @@ require('dotenv').config();
 
 // Gemini API key should be provided via environment variable for security.
 // Set the environment variable GEMINI_API_KEY in production (do NOT commit keys).
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_HERE';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyANt9WI56zqzUfP3M0p2gsLMkUfbFbUeWw';
 
 const app = express();
 const server = http.createServer(app);
@@ -706,8 +706,8 @@ function validateFirstName(firstName) {
 }
 
 function validatePassword(password) {
-    // No spaces, at least 8 characters
-    return typeof password === 'string' && password.length >= 8 && !/\s/.test(password);
+    // No spaces, at least 7 characters
+    return typeof password === 'string' && password.length >= 7 && !/\s/.test(password);
 }
 
 function hashPassword(password, salt) {
@@ -1342,11 +1342,6 @@ app.post('/api/generate-quiz/topic', async (req, res) => {
             return res.status(400).json({ error: 'Topic and question count are required' });
         }
         
-        // Validate question count range
-        if (questionCount < 1 || questionCount > 50) {
-            return res.status(400).json({ error: 'Question count must be between 1 and 50' });
-        }
-        
         console.log(`\n📝 Quiz generation request received:`);
         console.log(`   Topic: ${topic}`);
         console.log(`   Questions: ${questionCount}`);
@@ -1398,11 +1393,6 @@ app.post('/api/generate-quiz/document', upload.single('document'), handleMulterE
         
         if (!questionCount) {
             return res.status(400).json({ error: 'Question count is required' });
-        }
-        
-        // Validate question count range
-        if (questionCount < 1 || questionCount > 50) {
-            return res.status(400).json({ error: 'Question count must be between 1 and 50' });
         }
         
         // Extract text from uploaded file
