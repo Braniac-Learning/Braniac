@@ -8,7 +8,7 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 
 // TODO: Replace with your actual Gemini API key
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyAu9vedvy-IbHqGRIb4Ch4F3H7nT2-Zilc';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyBFUS3-g4sizVOt4cKUUM7yT1C4wvfGOe8';
 
 const app = express();
 const server = http.createServer(app);
