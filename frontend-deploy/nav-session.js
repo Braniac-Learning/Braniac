@@ -231,15 +231,17 @@ if (registerForm) {
       return;
     }
 
-    const usernameInput = registerForm.querySelector('input[placeholder="Username"]');
-    const firstNameInput = registerForm.querySelector('input[placeholder="First Name"]');
-    const passwordInput = registerForm.querySelector('input[type="password"]');
-    const confirmPasswordInput = registerForm.querySelectorAll('input[type="password"]')[1];
+    const usernameInput = registerForm.querySelector('input[name="username"]');
+    const firstNameInput = registerForm.querySelector('input[name="firstName"]');
+    const passwordInput = registerForm.querySelector('input[name="password"]');
+    const confirmPasswordInput = registerForm.querySelector('input[name="confirmPassword"]');
     
     const username = usernameInput ? usernameInput.value.trim() : "";
     const firstName = firstNameInput ? firstNameInput.value.trim() : "";
     const password = passwordInput ? passwordInput.value : "";
     const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : "";
+
+    console.log('Registration data:', { username, firstName, password: '***', confirmPassword: '***' });
 
     try {
       const result = await authAPI.register(username, firstName, password, confirmPassword);
