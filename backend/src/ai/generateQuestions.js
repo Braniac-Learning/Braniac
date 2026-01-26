@@ -83,15 +83,23 @@ No markdown, no explanation, ONLY the JSON array.`;
     const data = await response.json();
     const text = data.candidates[0].content.parts[0].text;
     
-    // Extract JSON
+    // Try to extract and parse JSON
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
-      const questions = JSON.parse(jsonMatch[0]);
-      console.log(`   ✅ Generated ${questions.length} question(s) for ${subdomain} (${mode})`);
-      return questions;
+      try {
+        const questions = JSON.parse(jsonMatch[0]);
+        console.log(`   ✅ Generated ${questions.length} question(s) for ${subdomain} (${mode})`);
+        return questions;
+      } catch (parseError) {
+        console.error(`   ❌ JSON parse failed for ${subdomain}:`, parseError.message);
+        console.error(`   Raw text: ${text.substring(0, 200)}...`);
+        return [];
+      }
+    } else {
+      console.error(`   ❌ No JSON found in response for ${subdomain}`);
+      console.error(`   Raw text: ${text.substring(0, 200)}...`);
+      return [];
     }
-    
-    throw new Error('Invalid JSON response');
   } catch (error) {
     console.error(`   ❌ Generation failed for ${subdomain}:`, error.message);
     return [];
@@ -119,13 +127,21 @@ async function generateWithPlan({ topic, plan, difficulty, apiKey }) {
       questionCount: 1
     });
     
-    allQuestions.push(...questions);
+    if (questions && questions.length > 0) {
+      allQuestions.push(...questions);
+    } else {
+      console.log(`   ⚠️ Skipping failed question for ${item.subdomain}`);
+    }
     
     // Small delay to avoid rate limits
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 300));
   }
   
-  console.log(`✅ Successfully generated ${allQuestions.length}/${plan.length} questions\n`);
+  console.log(`✅ Successfully generated ${allQuestions.length}/${plan.length} questions`);
+  
+  if (allQuestions.length === 0) {
+    console.error(`❌ No questions generated at all - this will trigger fallback\n`);
+  }
   
   return allQuestions;
 }
