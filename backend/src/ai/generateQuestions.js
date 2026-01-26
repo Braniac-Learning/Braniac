@@ -37,10 +37,19 @@ CRITICAL REQUIREMENTS:
 4. DO NOT ask generic questions like "What is ${topic}?"
 5. Focus on ${subdomain} specifically, not general ${topic}
 
+LANGUAGE REQUIREMENTS:
+- Use SIMPLE, CLEAR English
+- Use common everyday words
+- Avoid complex vocabulary and jargon
+- Write at a basic reading level
+- Make questions easy to understand
+- Short, clear sentences
+
 FORMAT REQUIREMENTS:
 - Exactly 4 answer options (A, B, C, D)
 - Only ONE correct answer
 - Keep options SHORT (5-7 words maximum)
+- Use simple words in options
 - Distribute correct answers randomly (don't always use A or B)
 
 Output ONLY valid JSON array:

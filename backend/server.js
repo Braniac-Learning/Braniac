@@ -292,6 +292,14 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
     DIFFICULTY LEVEL: ${difficultyPrompts[difficulty]}
     ${contextualGuidance}
     
+    LANGUAGE REQUIREMENTS:
+    - Use SIMPLE, CLEAR English
+    - Use common everyday words that everyone can understand
+    - Avoid complex vocabulary, technical jargon, and difficult words
+    - Write questions at a basic reading level
+    - Keep sentences short and easy to understand
+    - Make sure a 10-year-old could read and understand the questions
+    
     🚨 CRITICAL DIVERSITY REQUIREMENTS - MUST FOLLOW:
     - Question 1, 2, 3, etc. must each focus on COMPLETELY DIFFERENT subtopics
     - NO TWO QUESTIONS should test the same concept or use similar wording
