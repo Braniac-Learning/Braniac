@@ -3,8 +3,52 @@
  * Analyzes document content to determine type and characteristics
  */
 
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
 /**
- * Classify document type and content characteristics
+ * Use AI to deeply analyze document content and determine its type
+ * @param {string} content - Document text content
+ * @returns {Promise<Object>} AI classification result
+ */
+async function classifyDocumentWithAI(content) {
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+  
+  // Take a representative sample of the document
+  const sample = content.length > 3000 ? content.substring(0, 3000) : content;
+  
+  const prompt = `Analyze this document and determine its type and characteristics. Read and understand the content carefully.
+
+DOCUMENT CONTENT:
+${sample}
+
+Respond with ONLY valid JSON (no markdown, no explanations):
+{
+  "primaryType": "mathematical" | "narrative" | "spelling" | "religious" | "historical" | "scientific" | "instructional" | "general",
+  "confidence": 0.0-1.0,
+  "isMathCalculationHeavy": true/false (only if mathematical),
+  "topics": ["main topic 1", "main topic 2"],
+  "description": "one sentence describing what this document is about"
+}`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim();
+    
+    // Remove markdown code blocks if present
+    const jsonText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const classification = JSON.parse(jsonText);
+    
+    console.log('🤖 AI Classification:', classification);
+    return classification;
+  } catch (error) {
+    console.error('❌ AI classification failed:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Classify document type and content characteristics using pattern matching (fallback)
  * @param {string} content - Document text content
  * @returns {Object} Classification result
  */
@@ -13,8 +57,8 @@ function classifyDocument(content) {
   const totalWords = content.split(/\s+/).length;
   const totalLines = content.split('\n').length;
   
-  // Sample first 2000 characters for quick analysis
-  const sample = content.substring(0, 2000).toLowerCase();
+  // Scan entire document for pattern analysis
+  const sample = content;
   
   // Detection patterns
   const patterns = {
@@ -88,7 +132,7 @@ function classifyDocument(content) {
   const hasSections = /(?:section|part)\s+\d+/i.test(content);
   const hasVerses = /verse\s+\d+|\d+:\d+/i.test(content);
   
-  console.log('\n📄 Document Classification:');
+  console.log('\n📄 Document Classification (Pattern-Based):');
   console.log(`   Type: ${primaryType}${isMixed ? ' (mixed)' : ''}`);
   console.log(`   Length: ${totalWords} words, ${totalLines} lines`);
   console.log(`   Calculation ratio: ${(calculationRatio * 100).toFixed(1)}%`);
@@ -111,4 +155,36 @@ function classifyDocument(content) {
   };
 }
 
-module.exports = { classifyDocument };
+/**
+ * Main classification function - tries AI first, falls back to pattern matching
+ * @param {string} content - Document text content
+ * @returns {Promise<Object>} Classification result
+ */
+async function classifyDocumentSmart(content) {
+  console.log('📖 Scanning document to understand content...');
+  
+  // Try AI-powered classification first
+  const aiResult = await classifyDocumentWithAI(content);
+  if (aiResult && aiResult.primaryType) {
+    console.log('✅ AI successfully analyzed document content');
+    
+    // Enhance with pattern-based calculation ratio for math docs
+    if (aiResult.primaryType === 'mathematical') {
+      const patternResult = classifyDocument(content);
+      aiResult.calculationRatio = patternResult.calculationRatio;
+      aiResult.structure = patternResult.structure;
+    }
+    
+    return aiResult;
+  }
+  
+  // Fallback to pattern matching if AI fails
+  console.log('⚠️ Using pattern-based analysis as fallback');
+  return classifyDocument(content);
+}
+
+module.exports = { 
+  classifyDocument,
+  classifyDocumentSmart,
+  classifyDocumentWithAI
+};

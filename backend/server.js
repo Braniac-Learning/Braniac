@@ -387,14 +387,14 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
 
 // Import document-aware generation system
 let documentSystemAvailable = false;
-let classifyDocument, getQuestionStrategy, distributeQuestionTypes, generateDocumentQuestions;
+let classifyDocumentSmart, getQuestionStrategy, distributeQuestionTypes, generateDocumentQuestions;
 
 try {
     const classifyModule = require('./src/documents/classifyDocument');
     const strategyModule = require('./src/documents/questionStrategies');
     const generateModule = require('./src/documents/generateDocumentQuestions');
     
-    classifyDocument = classifyModule.classifyDocument;
+    classifyDocumentSmart = classifyModule.classifyDocumentSmart; // AI-powered classification
     getQuestionStrategy = strategyModule.getQuestionStrategy;
     distributeQuestionTypes = strategyModule.distributeQuestionTypes;
     generateDocumentQuestions = generateModule.generateDocumentQuestions;
@@ -416,11 +416,17 @@ async function generateQuizFromDocument(fileContent, questionCount, difficulty =
     if (documentSystemAvailable) {
         try {
             console.log(`\n${'='.repeat(60)}`);
-            console.log(`📄 DOCUMENT-AWARE SYSTEM - Analyzing document...`);
+            console.log(`📄 DOCUMENT-AWARE SYSTEM - Scanning document...`);
             console.log(`${'='.repeat(60)}`);
             
-            // Step 1: Classify document type and characteristics
-            const classification = await classifyDocument(fileContent);
+            // Step 1: Scan and classify document by understanding its content
+            const classification = await classifyDocumentSmart(fileContent);
+            console.log('📊 Document Understanding:', {
+                type: classification.primaryType,
+                description: classification.description || 'Classified by pattern analysis',
+                topics: classification.topics || [],
+                calculationRatio: classification.calculationRatio
+            });
             
             // Step 2: Get question strategy for this document type
             console.log(`\n2️⃣ Selecting question strategy...`);
