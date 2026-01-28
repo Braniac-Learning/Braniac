@@ -7,6 +7,7 @@ const path = require('path');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const cookieParser = require('cookie-parser');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 // Load environment variables from .env for local development
 require('dotenv').config();
 
@@ -346,7 +347,7 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
     Make sure the questions are educational, varied in difficulty within the ${difficulty} level, and cover different aspects of the topic with creative scenarios.`;
     
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -551,7 +552,7 @@ async function generateQuizFromDocumentOriginal(fileContent, questionCount, diff
     ]`;
     
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1528,6 +1529,8 @@ app.post('/api/generate-quiz/document', upload.single('document'), handleMulterE
         let summary = req.file.originalname.replace(/\.[^/.]+$/, "").substring(0, 30); // Default fallback
         
         try {
+            const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
             const summaryPrompt = `Summarize the following document content in EXACTLY 3 words maximum. Be concise and descriptive:\n\n${fileContent.substring(0, 500)}`;
             const summaryResult = await model.generateContent(summaryPrompt);
             const summaryText = summaryResult.response.text().trim();
