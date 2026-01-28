@@ -385,10 +385,87 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
     }
 }
 
+// Import document-aware generation system
+let documentSystemAvailable = false;
+let classifyDocument, getQuestionStrategy, distributeQuestionTypes, generateDocumentQuestions;
+
+try {
+    const classifyModule = require('./src/documents/classifyDocument');
+    const strategyModule = require('./src/documents/questionStrategies');
+    const generateModule = require('./src/documents/generateDocumentQuestions');
+    
+    classifyDocument = classifyModule.classifyDocument;
+    getQuestionStrategy = strategyModule.getQuestionStrategy;
+    distributeQuestionTypes = strategyModule.distributeQuestionTypes;
+    generateDocumentQuestions = generateModule.generateDocumentQuestions;
+    
+    documentSystemAvailable = true;
+    console.log('✅ Document-aware generation system loaded successfully');
+} catch (error) {
+    console.log('⚠️  Document system not available, using original generation:', error.message);
+}
+
 async function generateQuizFromDocument(fileContent, questionCount, difficulty = 'intermediate') {
     if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || GEMINI_API_KEY.startsWith('ghp_')) {
         // Return mock data for testing when API key is not properly configured
         console.log('Using mock data for document quiz generation - configure a valid Gemini API key for real functionality');
+        return generateMockDocumentQuiz(fileContent, questionCount, difficulty);
+    }
+
+    // Try new document-aware system if available
+    if (documentSystemAvailable) {
+        try {
+            console.log(`\n${'='.repeat(60)}`);
+            console.log(`📄 DOCUMENT-AWARE SYSTEM - Analyzing document...`);
+            console.log(`${'='.repeat(60)}`);
+            
+            // Step 1: Classify document type and characteristics
+            const classification = await classifyDocument(fileContent);
+            
+            // Step 2: Get question strategy for this document type
+            console.log(`\n2️⃣ Selecting question strategy...`);
+            const strategy = getQuestionStrategy(classification);
+            console.log(`   Strategy: ${classification.primaryType}${classification.calculationRatio > 0.5 ? ' (calculation-heavy)' : ''}`);
+            
+            // Step 3: Distribute question types
+            console.log(`\n3️⃣ Distributing question types...`);
+            const distribution = distributeQuestionTypes(strategy, questionCount);
+            distribution.forEach((item, i) => {
+                console.log(`   Q${i + 1}: ${item.type} - ${item.description}`);
+            });
+            
+            // Step 4: Generate questions
+            const questions = await generateDocumentQuestions({
+                classification,
+                distribution,
+                content: fileContent,
+                difficulty,
+                apiKey: GEMINI_API_KEY
+            });
+            
+            console.log(`${'='.repeat(60)}`);
+            console.log(`✅ DOCUMENT-AWARE GENERATION COMPLETE`);
+            console.log(`${'='.repeat(60)}\n`);
+            
+            if (questions && questions.length > 0) {
+                return shuffleAnswers(questions);
+            }
+            
+            throw new Error('Document system returned no questions');
+            
+        } catch (error) {
+            console.error('❌ Document-aware generation failed:', error);
+            console.log('⚠️  Falling back to original system...\n');
+        }
+    }
+
+    // Fallback to original system
+    return generateQuizFromDocumentOriginal(fileContent, questionCount, difficulty);
+}
+
+// Keep original function as fallback
+async function generateQuizFromDocumentOriginal(fileContent, questionCount, difficulty = 'intermediate') {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || GEMINI_API_KEY.startsWith('ghp_')) {
         return generateMockDocumentQuiz(fileContent, questionCount, difficulty);
     }
 
