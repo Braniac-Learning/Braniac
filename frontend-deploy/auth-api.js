@@ -13,8 +13,14 @@ class AuthAPI {
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
         
-        // Get token from localStorage as backup
-        const session = JSON.parse(localStorage.getItem('braniacSession'));
+        // Get token from localStorage as backup (with safety check)
+        let session = null;
+        try {
+            const sessionStr = localStorage.getItem('braniacSession');
+            session = sessionStr ? JSON.parse(sessionStr) : null;
+        } catch (e) {
+            console.error('Failed to parse session:', e);
+        }
         const token = session?.token;
         
         const config = {
@@ -29,15 +35,23 @@ class AuthAPI {
 
         try {
             const response = await fetch(url, config);
+            
+            // Handle non-JSON responses
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server returned non-JSON response. Backend may be down.');
+            }
+            
             const data = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.error || 'Request failed');
+                console.error(`API Error ${response.status}:`, data.error);
+                throw new Error(data.error || `Request failed with status ${response.status}`);
             }
             
             return data;
         } catch (error) {
-            console.error('API request failed:', error);
+            console.error('API request failed:', endpoint, error.message);
             throw error;
         }
     }
@@ -103,11 +117,18 @@ class AuthAPI {
 
     // Logout user
     async logout() {
-        await this.request('/api/auth/logout', {
-            method: 'POST'
-        });
+        try {
+            await this.request('/api/auth/logout', {
+                method: 'POST'
+            });
+        } catch (error) {
+            console.error('Logout API call failed:', error);
+            // Continue with local cleanup even if API fails
+        }
         
+        // Always clear local session
         localStorage.removeItem('braniacSession');
+        localStorage.removeItem('braniacFirstName');
     }
 
     // Get current user info
@@ -164,7 +185,14 @@ class AuthAPI {
         });
         
         // Update localStorage session
-        const session = JSON.parse(localStorage.getItem('braniacSession'));
+        let session = null;
+        try {
+            const sessionStr = localStorage.getItem('braniacSession');
+            session = sessionStr ? JSON.parse(sessionStr) : null;
+        } catch (e) {
+            console.error('Failed to parse session:', e);
+        }
+        
         if (session) {
             if (profileData.profilePicture) {
                 session.pfp = profileData.profilePicture;
@@ -196,8 +224,25 @@ class AuthAPI {
 
     // Get session from localStorage
     getSession() {
-        const session = localStorage.getItem('braniacSession');
-        return session ? JSON.parse(session) : null;
+        try {
+            const sessionStr = localStorage.getItem('braniacSession');
+            if (!sessionStr) return null;
+            
+            const session = JSON.parse(sessionStr);
+            
+            // Validate session structure
+            if (!session || typeof session !== 'object') {
+                console.warn('Invalid session structure, clearing');
+                localStorage.removeItem('braniacSession');
+                return null;
+            }
+            
+            return session;
+        } catch (error) {
+            console.error('Failed to get session:', error);
+            localStorage.removeItem('braniacSession');
+            return null;
+        }
     }
 }
 

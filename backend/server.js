@@ -798,8 +798,8 @@ function validateFirstName(firstName) {
 }
 
 function validatePassword(password) {
-    // No spaces, at least 7 characters
-    return typeof password === 'string' && password.length >= 7 && !/\s/.test(password);
+    // No spaces, at least 8 characters (matches error message)
+    return typeof password === 'string' && password.length >= 8 && !/\s/.test(password);
 }
 
 function hashPassword(password, salt) {
@@ -1228,11 +1228,12 @@ async function getUserFromRequest(req) {
 
 // Logout route
 app.post('/api/auth/logout', async (req, res) => {
-    const token = req.cookies && req.cookies.session;
+    // Get token from cookie or header
+    const token = req.cookies?.session || req.headers['x-session-token'];
     if (token) {
         await deleteSession(token);
     }
-    res.clearCookie('session');
+    res.clearCookie('session', { path: '/' });
     return res.json({ ok: true, message: 'Logged out successfully' });
 });
 

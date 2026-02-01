@@ -23,7 +23,14 @@ document.addEventListener('click', (e) => {
 }, true);
 
 document.addEventListener('DOMContentLoaded', () => {
-  const session = JSON.parse(localStorage.getItem('braniacSession'));
+  let session = null;
+  try {
+    const sessionStr = localStorage.getItem('braniacSession');
+    session = sessionStr ? JSON.parse(sessionStr) : null;
+  } catch (e) {
+    console.error('Failed to parse session:', e);
+    localStorage.removeItem('braniacSession');
+  }
 
   const signInBtn = document.getElementById('openSignIn');
   const navProfile = document.getElementById('navProfile');
@@ -137,11 +144,19 @@ function setSession(session) {
 }
 
 function getSession() {
-  return JSON.parse(localStorage.getItem('braniacSession'));
+  try {
+    const sessionStr = localStorage.getItem('braniacSession');
+    return sessionStr ? JSON.parse(sessionStr) : null;
+  } catch (e) {
+    console.error('Failed to parse session:', e);
+    localStorage.removeItem('braniacSession');
+    return null;
+  }
 }
 
 function clearSession() {
   localStorage.removeItem('braniacSession');
+  localStorage.removeItem('braniacFirstName');
 }
 
 // -----------------------------
