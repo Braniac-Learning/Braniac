@@ -12,10 +12,16 @@ class AuthAPI {
     // Helper method for API calls
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
+        
+        // Get token from localStorage as backup
+        const session = JSON.parse(localStorage.getItem('braniacSession'));
+        const token = session?.token;
+        
         const config = {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                ...(token && { 'x-session-token': token }), // Send token in header
                 ...options.headers
             },
             credentials: 'include' // Include cookies for session
@@ -49,11 +55,13 @@ class AuthAPI {
                 type: 'user',
                 username: data.user.username,
                 firstName: data.user.firstName,
-                pfp: 'assets/icons/guest.svg'
+                pfp: 'assets/icons/guest.svg',
+                token: data.token // Store token for API requests
             };
             localStorage.setItem('braniacSession', JSON.stringify(session));
             // Save firstName separately for onboarding greeting
             localStorage.setItem('braniacFirstName', data.user.firstName);
+            console.log('✅ Registration successful, session stored');
         }
         
         return data;
@@ -72,9 +80,11 @@ class AuthAPI {
                 type: 'user',
                 username: data.user.username,
                 firstName: data.user.firstName,
-                pfp: 'assets/icons/guest.svg'
+                pfp: 'assets/icons/guest.svg',
+                token: data.token // Store token for API requests
             };
             localStorage.setItem('braniacSession', JSON.stringify(session));
+            console.log('✅ Login successful, session stored');
             
             // Try to get full user data, but don't fail login if it errors
             try {

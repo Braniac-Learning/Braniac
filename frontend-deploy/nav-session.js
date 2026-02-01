@@ -163,16 +163,43 @@ if (signInForm) {
     const username = usernameInput ? usernameInput.value.trim() : "";
     const password = passwordInput ? passwordInput.value : "";
 
+    // Show loading state
+    const submitBtn = signInForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) submitBtn.textContent = 'Signing in...';
+    if (submitBtn) submitBtn.disabled = true;
+
     try {
+      console.log('🔐 Attempting login for:', username);
       const result = await authAPI.login(username, password);
       
       if (result.ok) {
+        console.log('✅ Login successful');
         // Login successful
         const isBackend = window.location.pathname.includes('/backend/');
         window.location.href = isBackend ? '../frontend-deploy/index.html' : 'index.html';
       }
     } catch (error) {
-      alert(error.message || 'Login failed. Please check your credentials.');
+      console.error('❌ Login error:', error);
+      if (submitBtn) {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+      
+      // Show user-friendly error
+      const errorMsg = error.message || 'Login failed. Please check your credentials.';
+      const errorDiv = signInForm.querySelector('.error-message') || document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.style.color = 'red';
+      errorDiv.style.marginTop = '10px';
+      errorDiv.style.textAlign = 'center';
+      errorDiv.textContent = errorMsg;
+      
+      if (!signInForm.querySelector('.error-message')) {
+        signInForm.appendChild(errorDiv);
+      }
+      
+      setTimeout(() => errorDiv.remove(), 4000);
     }
   });
 }
@@ -242,18 +269,44 @@ if (registerForm) {
     const password = passwordInput ? passwordInput.value : "";
     const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : "";
 
-    console.log('Registration data:', { username, firstName, password: '***', confirmPassword: '***' });
+    console.log('📝 Registration attempt for:', username);
+
+    // Show loading state
+    const submitBtn = registerForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) submitBtn.textContent = 'Creating account...';
+    if (submitBtn) submitBtn.disabled = true;
 
     try {
       const result = await authAPI.register(username, firstName, password, confirmPassword);
       
       if (result.ok) {
+        console.log('✅ Registration successful');
         // Registration successful
         const isBackend = window.location.pathname.includes('/backend/');
         window.location.href = isBackend ? '../frontend-deploy/onboarding.html' : 'onboarding.html';
       }
     } catch (error) {
-      alert(error.message || 'Registration failed. Please try again.');
+      console.error('❌ Registration error:', error);
+      if (submitBtn) {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+      
+      // Show user-friendly error
+      const errorMsg = error.message || 'Registration failed. Please try again.';
+      const errorDiv = registerForm.querySelector('.error-message') || document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.style.color = 'red';
+      errorDiv.style.marginTop = '10px';
+      errorDiv.style.textAlign = 'center';
+      errorDiv.textContent = errorMsg;
+      
+      if (!registerForm.querySelector('.error-message')) {
+        registerForm.appendChild(errorDiv);
+      }
+      
+      setTimeout(() => errorDiv.remove(), 4000);
     }
   });
 }

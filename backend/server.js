@@ -1118,14 +1118,21 @@ app.post('/api/auth/register', async (req, res) => {
         await saveSession(token, normalized);
 
         // Set HttpOnly cookie with cross-origin support
+        const isDev = process.env.NODE_ENV !== 'production';
         res.cookie('session', token, { 
             httpOnly: true, 
-            sameSite: 'none', 
-            secure: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            sameSite: isDev ? 'lax' : 'none', 
+            secure: !isDev, // secure only in production
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            path: '/'
         });
 
-        return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
+        console.log('✅ User registered successfully:', user.username);
+        return res.json({ 
+            ok: true, 
+            user: { username: user.username, firstName: user.firstName },
+            token: token // Send token for client-side storage
+        });
     } catch (err) {
         console.error('Register error:', err);
         return res.status(500).json({ error: 'Server error' });
@@ -1167,14 +1174,22 @@ app.post('/api/auth/login', async (req, res) => {
 
         const token = createSessionToken(normalized);
         await saveSession(token, normalized);
+        
+        const isDev = process.env.NODE_ENV !== 'production';
         res.cookie('session', token, { 
             httpOnly: true, 
-            sameSite: 'none', 
-            secure: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            sameSite: isDev ? 'lax' : 'none', 
+            secure: !isDev,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            path: '/'
         });
 
-        return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
+        console.log('✅ Login successful:', user.username);
+        return res.json({ 
+            ok: true, 
+            user: { username: user.username, firstName: user.firstName },
+            token: token // Send token for client-side storage as backup
+        });
     } catch (err) {
         console.error('Login error:', err);
         return res.status(500).json({ error: 'Server error' });
@@ -1183,9 +1198,13 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Simple middleware to get current user from session cookie or header
 async function getUserFromRequest(req) {
-    const token = req.cookies && req.cookies.session || req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '');
+    // Check cookie first, then Authorization header, then custom x-session-token header
+    const token = req.cookies?.session || 
+                  (req.headers['authorization']?.replace('Bearer ', '')) ||
+                  req.headers['x-session-token'];
+    
     if (!token) {
-        console.log('No session token found on request');
+        console.log('⚠️  No session token found on request');
         return null;
     }
     console.log('getUserFromRequest token startsWith:', token && token.slice ? token.slice(0,8) : token);
