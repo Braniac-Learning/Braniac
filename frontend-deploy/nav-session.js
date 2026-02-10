@@ -116,8 +116,18 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Logout error:', error);
     }
     localStorage.removeItem('braniacSession');
+    localStorage.removeItem('braniacFirstName');
+    
+    // Force page reload to update UI
     const isBackendUrl = window.location.pathname.includes('/backend/');
-    window.location.href = isBackendUrl ? '../frontend-deploy/index.html' : 'index.html';
+    const targetPage = isBackendUrl ? '../frontend-deploy/index.html' : 'index.html';
+    
+    // If already on index.html, force reload; otherwise navigate
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+      window.location.reload();
+    } else {
+      window.location.href = targetPage;
+    }
   });
 
   guestLoginBtn?.addEventListener('click', (e) => {
