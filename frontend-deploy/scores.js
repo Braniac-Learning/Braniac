@@ -1,6 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Check session first
-  const session = JSON.parse(localStorage.getItem('braniacSession'));
+  // Check session first with safe parsing
+  let session = null;
+  try {
+    const sessionStr = localStorage.getItem('braniacSession');
+    session = sessionStr ? JSON.parse(sessionStr) : null;
+  } catch (e) {
+    console.error('Failed to parse session:', e);
+    localStorage.removeItem('braniacSession');
+  }
   
   if (!session) {
     window.location.href = 'index.html';
@@ -53,16 +60,45 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Track loading state to prevent race conditions
+let isLoadingScores = false;
+
 async function loadAndRenderScores() {
-  const session = JSON.parse(localStorage.getItem('braniacSession'));
+  if (isLoadingScores) {
+    console.log('⏳ Scores already loading, skipping duplicate call');
+    return;
+  }
+  
+  isLoadingScores = true;
+  
+  let session = null;
+  try {
+    const sessionStr = localStorage.getItem('braniacSession');
+    session = sessionStr ? JSON.parse(sessionStr) : null;
+  } catch (e) {
+    console.error('Failed to parse session:', e);
+    isLoadingScores = false;
+    return;
+  }
+  
   let scores = [];
   
   // Try to load from backend if user is logged in
   if (session && session.type === 'user') {
     try {
       const API_BASE = window.API_BASE || 'https://braniac-backend.onrender.com';
+      
+      // Prepare headers with session token if available
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      if (session.token) {
+        headers['x-session-token'] = session.token;
+      }
+      
       const response = await fetch(`${API_BASE}/api/user/data`, {
         method: 'GET',
+        headers: headers,
         credentials: 'include'
       });
       
@@ -96,7 +132,8 @@ async function loadAndRenderScores() {
   // Fallback to localStorage if backend failed or guest user
   if (scores.length === 0) {
     try {
-      scores = JSON.parse(localStorage.getItem('userScores')) || [];
+      const storedScores = localStorage.getItem('userScores');
+      scores = storedScores ? JSON.parse(storedScores) : [];
       console.log('📦 Using localStorage scores:', scores.length);
     } catch (e) {
       console.error('❌ Error reading localStorage:', e);
@@ -105,16 +142,23 @@ async function loadAndRenderScores() {
   }
   
   renderScores(scores);
+  isLoadingScores = false;
 }
 
 function renderScores(scores) {
   
-  console.log('Total scores found:', scores.length);
+  console.log('🎯 Rendering scores:', scores.length);
+  
+  // Validate scores array
+  if (!Array.isArray(scores)) {
+    console.error('❌ Invalid scores data:', scores);
+    scores = [];
+  }
   
   // Group scores by type
-  const topicScores = scores.filter(s => s.type === 'topic');
-  const documentScores = scores.filter(s => s.type === 'document');
-  const multiplayerScores = scores.filter(s => s.type === 'multiplayer');
+  const topicScores = scores.filter(s => s && s.type === 'topic');
+  const documentScores = scores.filter(s => s && s.type === 'document');
+  const multiplayerScores = scores.filter(s => s && s.type === 'multiplayer');
 
   console.log('Topic:', topicScores.length, 'Document:', documentScores.length, 'Multiplayer:', multiplayerScores.length);
 
@@ -171,8 +215,14 @@ function renderScores(scores) {
 }
 
 function createScoreCard(score) {
-  const percentage = score.percentage || Math.round((score.score / score.total) * 100);
-  const date = new Date(score.date);
+  // Validate score object
+  if (!score || typeof score !== 'object') {
+    console.error('❌ Invalid score object:', score);
+    return '';
+  }
+  
+  const percentage = score.percentage || Math.round(((score.score || 0) / (score.total || 1)) * 100);
+  const date = new Date(score.date || Date.now());
   const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   
   // Calculate stroke dasharray for progress ring
@@ -205,7 +255,7 @@ function createScoreCard(score) {
         <div class="score-stats">
           <div class="stat">
             <span class="stat-label">Correct</span>
-            <span class="stat-value">${score.score}/${score.total}</span>
+            <span class="stat-value">${score.score || 0}/${score.total || 1}</span>
           </div>
           <div class="stat">
             <span class="stat-label">Accuracy</span>
