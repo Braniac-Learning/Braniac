@@ -120,8 +120,18 @@ function calculateStats(userData) {
   };
 }
 
+// Track if achievements are currently loading to prevent race conditions
+let isLoadingAchievements = false;
+
 // Check achievements and update UI
 async function updateAchievementsUI() {
+  if (isLoadingAchievements) {
+    console.log('⏳ Achievements already loading, skipping duplicate call');
+    return;
+  }
+  
+  isLoadingAchievements = true;
+  
   try {
     console.log('🏆 Loading achievements...');
     
@@ -170,20 +180,28 @@ async function updateAchievementsUI() {
     console.log(`✅ ${unlockedCount} achievements unlocked`);
     console.log(`🔒 ${lockedAchievements.length} achievements locked`);
 
-    // Update the "obtained" section
+    // Update the "obtained" section - clear first to prevent duplicates
     const obtainedSection = document.getElementById('obtained');
-    if (obtainedSection && unlockedAchievements.length > 0) {
-      obtainedSection.innerHTML = unlockedAchievements.map(a => 
-        createAchievementCardHTML(a, true)
-      ).join('');
+    if (obtainedSection) {
+      if (unlockedAchievements.length > 0) {
+        obtainedSection.innerHTML = unlockedAchievements.map(a => 
+          createAchievementCardHTML(a, true)
+        ).join('');
+      } else {
+        obtainedSection.innerHTML = '';
+      }
     }
 
-    // Update the "unobtained" section
+    // Update the "unobtained" section - clear first to prevent duplicates
     const unobtainedSection = document.getElementById('unobtained');
-    if (unobtainedSection && lockedAchievements.length > 0) {
-      unobtainedSection.innerHTML = lockedAchievements.map(a => 
-        createAchievementCardHTML(a, false)
-      ).join('');
+    if (unobtainedSection) {
+      if (lockedAchievements.length > 0) {
+        unobtainedSection.innerHTML = lockedAchievements.map(a => 
+          createAchievementCardHTML(a, false)
+        ).join('');
+      } else {
+        unobtainedSection.innerHTML = '';
+      }
     }
 
     // Show/hide no data view
@@ -198,13 +216,14 @@ async function updateAchievementsUI() {
 
     // Re-attach accordion listeners
     attachAccordionListeners();
+    
+    isLoadingAchievements = false;
 
     // Store achievements in localStorage for the existing code
     localStorage.setItem('userAchievements', JSON.stringify(unlockedAchievements.map(a => a.id)));
 
   } catch (error) {
-    console.error('❌ Error updating achievements:', error);
-  }
+    console.error('❌ Error updating achievements:', error);    isLoadingAchievements = false;  }
 }
 
 // Create achievement card HTML

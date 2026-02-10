@@ -1,5 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const session = JSON.parse(localStorage.getItem('braniacSession'));
+  let session = null;
+  try {
+    const sessionStr = localStorage.getItem('braniacSession');
+    session = sessionStr ? JSON.parse(sessionStr) : null;
+  } catch (e) {
+    console.error('Failed to parse session:', e);
+    localStorage.removeItem('braniacSession');
+  }
 
   if (!session) {
     window.location.href = 'index.html';

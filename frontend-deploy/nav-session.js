@@ -182,11 +182,28 @@ if (signInForm) {
       return;
     }
 
-    const usernameInput = signInForm.querySelector('input[placeholder="Username"]');
-    const passwordInput = signInForm.querySelector('input[type="password"]');
+    const usernameInput = signInForm.querySelector('input[name="username"]');
+    const passwordInput = signInForm.querySelector('input[name="password"]');
     
     const username = usernameInput ? usernameInput.value.trim() : "";
     const password = passwordInput ? passwordInput.value : "";
+    
+    // Additional validation check
+    if (!username || !password) {
+      const errorDiv = signInForm.querySelector('.error-message') || document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.style.color = 'red';
+      errorDiv.style.marginTop = '10px';
+      errorDiv.style.textAlign = 'center';
+      errorDiv.textContent = 'Username and password are required';
+      
+      if (!signInForm.querySelector('.error-message')) {
+        signInForm.appendChild(errorDiv);
+      }
+      
+      setTimeout(() => errorDiv.remove(), 3000);
+      return;
+    }
 
     // Show loading state
     const submitBtn = signInForm.querySelector('button[type="submit"]');
@@ -293,6 +310,23 @@ if (registerForm) {
     const firstName = firstNameInput ? firstNameInput.value.trim() : "";
     const password = passwordInput ? passwordInput.value : "";
     const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : "";
+
+    // Additional validation check
+    if (!username || !firstName || !password || !confirmPassword) {
+      const errorDiv = registerForm.querySelector('.error-message') || document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.style.color = 'red';
+      errorDiv.style.marginTop = '10px';
+      errorDiv.style.textAlign = 'center';
+      errorDiv.textContent = 'All fields are required';
+      
+      if (!registerForm.querySelector('.error-message')) {
+        registerForm.appendChild(errorDiv);
+      }
+      
+      setTimeout(() => errorDiv.remove(), 3000);
+      return;
+    }
 
     console.log('📝 Registration attempt for:', username);
 
