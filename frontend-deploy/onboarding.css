@@ -233,11 +233,16 @@ h1 {
 }
 
 /* Header & subtitle */
-.profile-container h1 {
+#profilePicture .profile-container h1 {
   font-family: 'Orbitron', sans-serif;
   font-size: 1.5rem;
   color: #EE247C;
   margin-bottom: -1rem;
+
+  /* neutralize gradient styles */
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
 }
 
 .profile-container .subtitle {
