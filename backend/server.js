@@ -1131,7 +1131,11 @@ app.post('/api/auth/register', async (req, res) => {
         return res.json({ 
             ok: true, 
             user: { username: user.username, firstName: user.firstName },
-            token: token // Send token for client-side storage
+            token: token, // Send token for client-side storage
+            userData: {
+                profilePicture: 'assets/icons/guest.svg',
+                bio: ''
+            }
         });
     } catch (err) {
         console.error('Register error:', err);
@@ -1184,11 +1188,21 @@ app.post('/api/auth/login', async (req, res) => {
             path: '/'
         });
 
+        // Get user profile data
+        const userData = await getUserData(user.username);
+        
         console.log('✅ Login successful:', user.username);
         return res.json({ 
             ok: true, 
             user: { username: user.username, firstName: user.firstName },
-            token: token // Send token for client-side storage as backup
+            token: token, // Send token for client-side storage as backup
+            userData: userData ? {
+                profilePicture: userData.profilePicture || 'assets/icons/guest.svg',
+                bio: userData.bio || ''
+            } : {
+                profilePicture: 'assets/icons/guest.svg',
+                bio: ''
+            }
         });
     } catch (err) {
         console.error('Login error:', err);
@@ -1247,24 +1261,28 @@ app.get('/api/auth/me', async (req, res) => {
     // Get user data along with basic info
     const userData = await getUserData(user.username);
     
+    const fullUserData = userData || {
+        scores: [],
+        achievements: [],
+        totalPoints: 0,
+        questionsAnswered: 0,
+        correctAnswers: 0,
+        quizzesTaken: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        profilePicture: 'assets/icons/guest.svg',
+        bio: ''
+    };
+    
     return res.json({ 
         ok: true, 
         user: { 
             username: user.username, 
-            firstName: user.firstName 
+            firstName: user.firstName,
+            profilePicture: fullUserData.profilePicture || 'assets/icons/guest.svg',
+            bio: fullUserData.bio || ''
         },
-        userData: userData || {
-            scores: [],
-            achievements: [],
-            totalPoints: 0,
-            questionsAnswered: 0,
-            correctAnswers: 0,
-            quizzesTaken: 0,
-            currentStreak: 0,
-            longestStreak: 0,
-            profilePicture: 'assets/icons/guest.svg',
-            bio: ''
-        }
+        userData: fullUserData
     });
 });
 
@@ -1396,13 +1414,54 @@ app.post('/api/user/profile', async (req, res) => {
             return res.status(401).json({ error: 'Not authenticated' });
         }
 
-        const { profilePicture, bio } = req.body;
+        const { profilePicture, bio, firstName } = req.body;
         
-        let userData = await getUserData(user.username) || {};
+        // Get existing user data (preserve all fields)
+        let userData = await getUserData(user.username) || {
+            scores: [],
+            achievements: [],
+            totalPoints: 0,
+            questionsAnswered: 0,
+            correctAnswers: 0,
+            quizzesTaken: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            uniqueSubjects: [],
+            learningDays: [],
+            logicQuizzes: 0,
+            perfectScores: 0,
+            consecutiveCorrect: 0,
+            maxConsecutiveCorrect: 0,
+            masteredSubjects: []
+        };
+        
+        // Update only the fields provided
         if (profilePicture !== undefined) userData.profilePicture = profilePicture;
         if (bio !== undefined) userData.bio = bio;
         
         await saveUserData(user.username, userData);
+
+        // Update firstName in users collection if provided
+        if (firstName !== undefined && firstName.trim() !== '') {
+            if (!validateFirstName(firstName)) {
+                return res.status(400).json({ error: 'Invalid first name. Use letters, spaces, and hyphens only.' });
+            }
+            
+            if (usersCollection) {
+                try {
+                    await usersCollection.updateOne(
+                        { username: user.username },
+                        { $set: { firstName: firstName.trim() } }
+                    );
+                } catch (err) {
+                    console.error('Error updating firstName in DB:', err);
+                }
+            } else if (inMemoryUsers.has(user.username)) {
+                const memUser = inMemoryUsers.get(user.username);
+                memUser.firstName = firstName.trim();
+                inMemoryUsers.set(user.username, memUser);
+            }
+        }
 
         return res.json({ ok: true, message: 'Profile updated' });
     } catch (err) {

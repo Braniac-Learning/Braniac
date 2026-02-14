@@ -12,10 +12,22 @@ class AuthAPI {
     // Helper method for API calls
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}${endpoint}`;
+        
+        // Get token from localStorage as backup
+        let session = null;
+        try {
+            const sessionStr = localStorage.getItem('braniacSession');
+            session = sessionStr ? JSON.parse(sessionStr) : null;
+        } catch (e) {
+            console.error('Failed to parse session:', e);
+        }
+        const token = session?.token;
+        
         const config = {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                ...(token && { 'x-session-token': token }), // Send token in header
                 ...options.headers
             },
             credentials: 'include' // Include cookies for session
@@ -44,14 +56,19 @@ class AuthAPI {
         });
         
         if (data.ok) {
-            // Save session to localStorage for quick access
+            // Save session to localStorage with profile data
             const session = {
                 type: 'user',
                 username: data.user.username,
                 firstName: data.user.firstName,
-                pfp: 'assets/icons/guest.svg'
+                pfp: data.userData?.profilePicture || 'assets/icons/guest.svg',
+                token: data.token
             };
             localStorage.setItem('braniacSession', JSON.stringify(session));
+            
+            if (data.userData?.bio) {
+                localStorage.setItem('braniacBio', data.userData.bio);
+            }
         }
         
         return data;
@@ -65,17 +82,19 @@ class AuthAPI {
         });
         
         if (data.ok) {
-            // Get full user data
-            const userData = await this.getUserData();
-            
-            // Save session to localStorage
+            // Save session to localStorage with profile data from backend
             const session = {
                 type: 'user',
                 username: data.user.username,
                 firstName: data.user.firstName,
-                pfp: userData.data?.profilePicture || 'assets/icons/guest.svg'
+                pfp: data.userData?.profilePicture || 'assets/icons/guest.svg',
+                token: data.token
             };
             localStorage.setItem('braniacSession', JSON.stringify(session));
+            
+            if (data.userData?.bio) {
+                localStorage.setItem('braniacBio', data.userData.bio);
+            }
         }
         
         return data;
@@ -93,7 +112,30 @@ class AuthAPI {
     // Get current user info
     async getCurrentUser() {
         try {
-            return await this.request('/api/auth/me');
+            const data = await this.request('/api/auth/me');
+            
+            // Sync profile data to localStorage
+            if (data.ok && data.user) {
+                let session = null;
+                try {
+                    const sessionStr = localStorage.getItem('braniacSession');
+                    session = sessionStr ? JSON.parse(sessionStr) : null;
+                } catch (e) {
+                    console.error('Failed to parse session:', e);
+                }
+                
+                if (session) {
+                    session.firstName = data.user.firstName;
+                    session.pfp = data.user.profilePicture || 'assets/icons/guest.svg';
+                    localStorage.setItem('braniacSession', JSON.stringify(session));
+                    
+                    if (data.user.bio) {
+                        localStorage.setItem('braniacBio', data.user.bio);
+                    }
+                }
+            }
+            
+            return data;
         } catch (error) {
             localStorage.removeItem('braniacSession');
             return null;
@@ -148,6 +190,9 @@ class AuthAPI {
         if (session) {
             if (profileData.profilePicture) {
                 session.pfp = profileData.profilePicture;
+            }
+            if (profileData.firstName) {
+                session.firstName = profileData.firstName;
             }
             localStorage.setItem('braniacSession', JSON.stringify(session));
         }

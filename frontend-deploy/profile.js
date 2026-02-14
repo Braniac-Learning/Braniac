@@ -93,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (session.type === 'user') {
                 await authAPI.updateProfile({
                     profilePicture: currentPfp.src,
-                    bio: editBio.value
+                    bio: editBio.value,
+                    firstName: editFirstName.value
                 });
             }
             

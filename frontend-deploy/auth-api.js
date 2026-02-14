@@ -69,10 +69,14 @@ class AuthAPI {
                 type: 'user',
                 username: data.user.username,
                 firstName: data.user.firstName,
-                pfp: 'assets/icons/guest.svg',
+                pfp: data.userData?.profilePicture || 'assets/icons/guest.svg',
                 token: data.token // Store token for API requests
             };
             localStorage.setItem('braniacSession', JSON.stringify(session));
+            // Save bio if provided
+            if (data.userData?.bio) {
+                localStorage.setItem('braniacBio', data.userData.bio);
+            }
             // Save firstName separately for onboarding greeting
             localStorage.setItem('braniacFirstName', data.user.firstName);
             console.log('✅ Registration successful, session stored');
@@ -89,27 +93,22 @@ class AuthAPI {
         });
         
         if (data.ok) {
-            // Save session to localStorage immediately
+            // Save session to localStorage with profile data from backend
             const session = {
                 type: 'user',
                 username: data.user.username,
                 firstName: data.user.firstName,
-                pfp: 'assets/icons/guest.svg',
+                pfp: data.userData?.profilePicture || 'assets/icons/guest.svg',
                 token: data.token // Store token for API requests
             };
             localStorage.setItem('braniacSession', JSON.stringify(session));
-            console.log('✅ Login successful, session stored');
             
-            // Try to get full user data, but don't fail login if it errors
-            try {
-                const userData = await this.getUserData();
-                if (userData.ok && userData.data?.profilePicture) {
-                    session.pfp = userData.data.profilePicture;
-                    localStorage.setItem('braniacSession', JSON.stringify(session));
-                }
-            } catch (error) {
-                console.log('Could not load user data, using defaults');
+            // Save bio separately
+            if (data.userData?.bio) {
+                localStorage.setItem('braniacBio', data.userData.bio);
             }
+            
+            console.log('✅ Login successful, session stored with profile data');
         }
         
         return data;
@@ -134,7 +133,30 @@ class AuthAPI {
     // Get current user info
     async getCurrentUser() {
         try {
-            return await this.request('/api/auth/me');
+            const data = await this.request('/api/auth/me');
+            
+            // Sync profile data to localStorage if user is authenticated
+            if (data.ok && data.user) {
+                let session = null;
+                try {
+                    const sessionStr = localStorage.getItem('braniacSession');
+                    session = sessionStr ? JSON.parse(sessionStr) : null;
+                } catch (e) {
+                    console.error('Failed to parse session:', e);
+                }
+                
+                if (session) {
+                    session.firstName = data.user.firstName;
+                    session.pfp = data.user.profilePicture || 'assets/icons/guest.svg';
+                    localStorage.setItem('braniacSession', JSON.stringify(session));
+                    
+                    if (data.user.bio) {
+                        localStorage.setItem('braniacBio', data.user.bio);
+                    }
+                }
+            }
+            
+            return data;
         } catch (error) {
             localStorage.removeItem('braniacSession');
             return null;
@@ -196,6 +218,9 @@ class AuthAPI {
         if (session) {
             if (profileData.profilePicture) {
                 session.pfp = profileData.profilePicture;
+            }
+            if (profileData.firstName) {
+                session.firstName = profileData.firstName;
             }
             localStorage.setItem('braniacSession', JSON.stringify(session));
         }
