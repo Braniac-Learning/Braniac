@@ -66,7 +66,8 @@ app.use(cors({
     ],
     credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increased limit to handle base64 profile images
+app.use(express.urlencoded({ limit: '10mb', extended: true })); // Also handle URL-encoded data
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname)));
 
@@ -890,6 +891,11 @@ async function getUserData(username) {
 async function saveUserData(username, data) {
     console.log('💾 saveUserData called for:', username);
     console.log('📊 Data to save - Scores count:', data.scores ? data.scores.length : 0);
+    console.log('📸 Profile picture:', {
+        hasProfilePicture: !!data.profilePicture,
+        profilePictureSize: data.profilePicture ? data.profilePicture.length : 0,
+        isDefault: data.profilePicture === 'assets/icons/guest.svg'
+    });
     
     const userData = {
         username,
@@ -1192,6 +1198,12 @@ app.post('/api/auth/login', async (req, res) => {
         const userData = await getUserData(user.username);
         
         console.log('✅ Login successful:', user.username);
+        console.log('📸 Profile data returned:', {
+            hasProfilePicture: !!(userData?.profilePicture),
+            profilePictureSize: userData?.profilePicture ? userData.profilePicture.length : 0,
+            isDefault: userData?.profilePicture === 'assets/icons/guest.svg'
+        });
+        
         return res.json({ 
             ok: true, 
             user: { username: user.username, firstName: user.firstName },
@@ -1415,6 +1427,14 @@ app.post('/api/user/profile', async (req, res) => {
         }
 
         const { profilePicture, bio, firstName } = req.body;
+        
+        console.log('📸 Profile update request:', {
+            username: user.username,
+            hasProfilePicture: !!profilePicture,
+            profilePictureSize: profilePicture ? profilePicture.length : 0,
+            hasBio: !!bio,
+            hasFirstName: !!firstName
+        });
         
         // Get existing user data (preserve all fields)
         let userData = await getUserData(user.username) || {
