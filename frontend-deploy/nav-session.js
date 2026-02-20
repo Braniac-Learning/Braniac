@@ -53,6 +53,31 @@ document.addEventListener('DOMContentLoaded', () => {
   navProfile?.classList.remove('hidden');
   signInBtn?.classList.add('hidden');
 
+  // Sync profile data from backend on page load (for authenticated users)
+  if (session.type === 'user') {
+    authAPI.getCurrentUser().then(data => {
+      if (data?.ok && data.user) {
+        // Update session in localStorage with latest backend data
+        session.pfp = data.user.profilePicture || session.pfp;
+        session.firstName = data.user.firstName || session.firstName;
+        localStorage.setItem('braniacSession', JSON.stringify(session));
+        
+        // Update the avatar images with fresh data
+        const isBackend = window.location.pathname.includes('/backend/');
+        const defaultIcon = isBackend ? '../frontend-deploy/assets/icons/guest.svg' : 'assets/icons/guest.svg';
+        let pfp = session.pfp || defaultIcon;
+        
+        if (navAvatar) navAvatar.src = pfp;
+        if (menuAvatar) menuAvatar.src = pfp;
+        if (menuFirstName) menuFirstName.textContent = (session.firstName || "USER").toUpperCase();
+        
+        console.log('✅ Profile synced from backend:', { pfp: session.pfp?.substring(0, 50) });
+      }
+    }).catch(err => {
+      console.error('Failed to sync profile from backend:', err);
+    });
+  }
+
   // --- ROBUST AVATAR LOADING START ---
   const isBackend = window.location.pathname.includes('/backend/');
   const defaultIcon = isBackend ? '../frontend-deploy/assets/icons/guest.svg' : 'assets/icons/guest.svg';

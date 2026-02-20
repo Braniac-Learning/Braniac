@@ -14,6 +14,32 @@ document.addEventListener('DOMContentLoaded', () => {
     editFirstName.value = session.firstName || "";
     editBio.value = storedBio;
     
+    // Sync latest profile data from backend if user is authenticated
+    if (session.type === 'user') {
+        authAPI.getCurrentUser().then(data => {
+            if (data?.ok && data.user) {
+                // Update with backend data
+                if (data.user.profilePicture && data.user.profilePicture !== 'assets/icons/guest.svg') {
+                    currentPfp.src = data.user.profilePicture;
+                    session.pfp = data.user.profilePicture;
+                }
+                if (data.user.firstName) {
+                    editFirstName.value = data.user.firstName;
+                    session.firstName = data.user.firstName;
+                }
+                if (data.user.bio) {
+                    editBio.value = data.user.bio;
+                    localStorage.setItem('braniacBio', data.user.bio);
+                    updateCharCount(data.user.bio.length);
+                }
+                localStorage.setItem('braniacSession', JSON.stringify(session));
+                console.log('✅ Profile page synced from backend');
+            }
+        }).catch(err => {
+            console.error('Failed to load profile from backend:', err);
+        });
+    }
+    
     // Initial count set
     updateCharCount(storedBio.length);
 
