@@ -173,7 +173,7 @@ const uploadOverlay = document.getElementById('uploadOverlay');
 const closeUploadChoices = document.getElementById('closeUploadChoices');
 
 // 1. REUSABLE SUCCESS HANDLER
-function processFinalPFP(base64Image) {
+async function processFinalPFP(base64Image) {
   if (profileImgPreview) {
     profileImgPreview.src = base64Image;
     profileImgPreview.style.width = "105px";
@@ -183,6 +183,8 @@ function processFinalPFP(base64Image) {
   }
 
   const firstName = localStorage.getItem('braniacFirstName') || 'BRANIAC';
+  const session = JSON.parse(localStorage.getItem('braniacSession'));
+  
   const newSession = {
     type: 'user',
     firstName: firstName,
@@ -190,6 +192,18 @@ function processFinalPFP(base64Image) {
   };
 
   localStorage.setItem('braniacSession', JSON.stringify(newSession));
+  
+  // Save to backend if user is authenticated
+  if (session && session.type === 'user' && typeof authAPI !== 'undefined') {
+    try {
+      await authAPI.updateProfile({
+        profilePicture: base64Image
+      });
+      console.log('✅ Profile picture saved to backend');
+    } catch (error) {
+      console.error('Failed to save profile picture to backend:', error);
+    }
+  }
   
   // Close overlay using your .active class
   uploadOverlay?.classList.remove('active');
