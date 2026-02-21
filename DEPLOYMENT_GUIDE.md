@@ -111,11 +111,11 @@ Your app will be live at: `https://your-app-name.railway.app`
 
 ## 🔧 If You Need Help
 
-Each platform has detailed instructions in the respective `.md` files:
-- `RAILWAY_DEPLOY.md` - Railway setup
-- `DIGITALOCEAN_DEPLOY.md` - DigitalOcean setup  
-- `FLY_DEPLOY.md` - Fly.io setup
-- `CYCLIC_DEPLOY.md` - Cyclic setup
+Refer to the platform-specific documentation:
+- Railway: https://docs.railway.app
+- Render: https://render.com/docs
+- DigitalOcean: https://docs.digitalocean.com
+- Fly.io: https://fly.io/docs
 
 ## 🌍 After Deployment
 

@@ -6,4 +6,3 @@ node_modules/
 .env*
 .vercel*
 render.yaml
-push_to_*.sh

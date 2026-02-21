@@ -2,10 +2,8 @@
   "name": "frontend-deploy",
   "version": "1.0.0",
   "description": "This is the frontend part of the Quiz AI App. It's a static website that communicates with a separate backend API.",
-  "main": "landing-script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
