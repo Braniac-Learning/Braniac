@@ -122,24 +122,47 @@ No markdown, no explanation, ONLY the JSON array.`;
  */
 async function generateWithPlan({ topic, plan, difficulty, apiKey }) {
   const allQuestions = [];
+  const maxRetries = 3;
   
   console.log(`\n🎲 Generating ${plan.length} questions...`);
   
   // Generate questions in batches to avoid rate limits
-  for (const item of plan) {
-    const questions = await generateQuestionsForContext({
-      topic,
-      subdomain: item.subdomain,
-      mode: item.mode,
-      difficulty,
-      apiKey,
-      questionCount: 1
-    });
+  for (let i = 0; i < plan.length; i++) {
+    const item = plan[i];
+    let questions = null;
+    let retryCount = 0;
+    
+    // Retry failed question generations to ensure we get the exact count
+    while (!questions || questions.length === 0) {
+      if (retryCount >= maxRetries) {
+        console.log(`   ❌ Failed to generate question ${i + 1} after ${maxRetries} retries`);
+        break;
+      }
+      
+      if (retryCount > 0) {
+        console.log(`   🔄 Retry ${retryCount}/${maxRetries} for question ${i + 1}...`);
+      }
+      
+      questions = await generateQuestionsForContext({
+        topic,
+        subdomain: item.subdomain,
+        mode: item.mode,
+        difficulty,
+        apiKey,
+        questionCount: 1
+      });
+      
+      retryCount++;
+      
+      // Small delay before retry
+      if (retryCount < maxRetries && (!questions || questions.length === 0)) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
     
     if (questions && questions.length > 0) {
       allQuestions.push(...questions);
-    } else {
-      console.log(`   ⚠️ Skipping failed question for ${item.subdomain}`);
+      console.log(`   ✅ Question ${i + 1}/${plan.length} generated`);
     }
     
     // Small delay to avoid rate limits
@@ -150,6 +173,8 @@ async function generateWithPlan({ topic, plan, difficulty, apiKey }) {
   
   if (allQuestions.length === 0) {
     console.error(`❌ No questions generated at all - this will trigger fallback\n`);
+  } else if (allQuestions.length < plan.length) {
+    console.warn(`⚠️  Only generated ${allQuestions.length}/${plan.length} questions\n`);
   }
   
   return allQuestions;
