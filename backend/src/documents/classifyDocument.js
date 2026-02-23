@@ -12,7 +12,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
  */
 async function classifyDocumentWithAI(content) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   
   // Take a representative sample of the document
   const sample = content.length > 3000 ? content.substring(0, 3000) : content;
