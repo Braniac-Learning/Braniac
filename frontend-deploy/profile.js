@@ -91,7 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             const video = document.createElement('video');
             video.srcObject = stream;
-            await video.play();
+            video.setAttribute('playsinline', 'true');
+            
+            // Wait for metadata to load before accessing video dimensions
+            await new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    video.play();
+                    resolve();
+                };
+            });
 
             const canvas = document.createElement('canvas');
             canvas.width = video.videoWidth;
@@ -106,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
             stream.getTracks().forEach(t => t.stop());
             uploadOverlay.classList.remove('active');
         } catch (err) {
+            console.error('Camera error:', err);
             alert("Camera access denied.");
         }
     };

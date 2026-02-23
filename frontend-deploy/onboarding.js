@@ -277,7 +277,15 @@ async function openCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     const video = document.createElement('video');
     video.srcObject = stream;
-    await video.play();
+    video.setAttribute('playsinline', 'true');
+    
+    // Wait for metadata to load before accessing video dimensions
+    await new Promise((resolve) => {
+      video.onloadedmetadata = () => {
+        video.play();
+        resolve();
+      };
+    });
 
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
