@@ -142,6 +142,18 @@ async function generateQuizFromTopic(topic, questionCount, difficulty = 'interme
                 apiKey: GEMINI_API_KEY
             });
             
+            // Check if we got enough questions
+            if (!questions || questions.length === 0) {
+                console.error(`❌ Contextual system returned no questions`);
+                throw new Error('No questions generated from contextual system');
+            }
+            
+            if (questions.length < questionCount) {
+                console.warn(`⚠️ Only got ${questions.length}/${questionCount} questions from contextual system`);
+                console.log('⚠️ Falling back to original system...\n');
+                throw new Error(`Insufficient questions: ${questions.length}/${questionCount}`);
+            }
+            
             console.log(`${'='.repeat(60)}`);
             console.log(`✅ CONTEXTUAL GENERATION COMPLETE`);
             console.log(`${'='.repeat(60)}\n`);
