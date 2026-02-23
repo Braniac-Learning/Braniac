@@ -183,10 +183,11 @@ async function processFinalPFP(base64Image) {
   }
 
   const firstName = localStorage.getItem('braniacFirstName') || 'BRANIAC';
-  const session = JSON.parse(localStorage.getItem('braniacSession'));
+  const session = JSON.parse(localStorage.getItem('braniacSession')) || {};
   
+  // Preserve ALL existing session data, only update pfp
   const newSession = {
-    type: 'user',
+    ...session,  // Spread existing session to preserve username, token, type, etc.
     firstName: firstName,
     pfp: base64Image 
   };
