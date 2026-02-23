@@ -128,7 +128,26 @@ function startQuiz() {
 }
 
 function displayQuestion() {
+    // Validate that we have questions and a valid current question index
+    if (!quizData.questions || quizData.questions.length === 0) {
+        console.error('No questions available to display');
+        showMessage('Error: No questions available');
+        return;
+    }
+    
+    if (quizData.currentQuestion >= quizData.questions.length) {
+        console.error('Question index out of range');
+        return;
+    }
+    
     const question = quizData.questions[quizData.currentQuestion];
+    
+    if (!question || !question.question || !question.options) {
+        console.error('Invalid question data:', question);
+        showMessage('Error: Invalid question data');
+        return;
+    }
+    
     const progress = ((quizData.currentQuestion + 1) / quizData.questions.length) * 100;
     
     document.getElementById('progressFill').style.width = progress + '%';
@@ -240,11 +259,22 @@ function showMultiplayer() {
     });
 
     socket.on('quizStarted', (data) => {
+        console.log('Quiz started event received:', data);
+        
+        if (!data.questions || data.questions.length === 0) {
+            console.error('No questions received from server');
+            showMessage('Error: No questions received from server');
+            return;
+        }
+        
         quizData.questions = data.questions;
         quizData.currentQuestion = 0;
         quizData.score = 0;
         quizData.answers = [];
         quizData.timeLimit = data.timeLimit;
+        
+        console.log(`Starting quiz with ${quizData.questions.length} questions`);
+        
         document.getElementById('multiplayer').classList.remove('active');
         document.getElementById('quiz').classList.add('active');
         displayQuestion();
