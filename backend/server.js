@@ -1657,6 +1657,13 @@ io.on('connection', (socket) => {
     // Create a new quiz room
     socket.on('createRoom', (data) => {
         const pin = generatePin();
+        let hostName = data.hostName || 'Host';
+        
+        // Handle guest numbering for host
+        if (hostName === 'Guest') {
+            hostName = 'Guest 1';
+        }
+        
         const room = {
             pin: pin,
             host: socket.id,
@@ -1664,20 +1671,20 @@ io.on('connection', (socket) => {
             timeLimit: data.timeLimit || 0,
             players: [{
                 id: socket.id,
-                name: 'Host',
+                name: hostName,
                 isHost: true,
                 score: 0
             }],
             isStarted: false,
-            results: []
+            results: [],
+            createdAt: Date.now()
         };
         
         rooms.set(pin, room);
         socket.join(pin);
         
-        console.log(`Room created with PIN: ${pin}, Time Limit: ${data.timeLimit || 'No limit'}`);
-        socket.emit('roomCreated', { pin: pin });
-        socket.emit('playerJoined', { players: room.players });
+        console.log(`Room created with PIN: ${pin}, Host: ${hostName}, Time Limit: ${data.timeLimit || 'No limit'}`);
+        socket.emit('roomCreated', { pin: pin, players: room.players });
     });
     
     // Join an existing quiz room

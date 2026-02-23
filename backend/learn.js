@@ -223,12 +223,14 @@ function showMultiplayer() {
     socket.on('roomCreated', (data) => {
         quizData.multiplayer.pin = data.pin;
         quizData.multiplayer.isHost = true;
+        quizData.multiplayer.players = data.players || [];
         displayRoom();
     });
 
     socket.on('joinedRoom', (data) => {
         quizData.multiplayer.pin = data.pin;
         quizData.multiplayer.isHost = false;
+        quizData.multiplayer.players = data.players || [];
         displayRoom();
     });
 
@@ -253,7 +255,12 @@ function showMultiplayer() {
     });
 
     socket.on('error', (data) => {
-        showMessage('Error: ' + data.message);
+        showMessage('Error: ' + data.message, 'error');
+        console.error('Multiplayer error:', data.message);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Disconnected from multiplayer server');
     });
 }
 
@@ -267,6 +274,16 @@ function createRoom() {
     // Store quiz name for score tracking
     quizData.quizName = topic;
     quizData.quizType = 'multiplayer';
+
+    // Get host name from session
+    const session = JSON.parse(localStorage.getItem('braniacSession'));
+    let hostName;
+    
+    if (session && session.type === 'user') {
+        hostName = session.firstName || session.username;
+    } else {
+        hostName = 'Guest';
+    }
 
     // Generate quiz first
             fetch(`${API_BASE}/api/generate-quiz/topic`, {
@@ -282,8 +299,12 @@ function createRoom() {
     .then(data => {
         quizData.multiplayer.socket.emit('createRoom', {
             questions: data.questions,
-            timeLimit: 0
+            timeLimit: 0,
+            hostName: hostName
         });
+    })
+    .catch(err => {
+        showMessage('Failed to generate quiz: ' + err.message);
     });
 }
 
@@ -387,8 +408,23 @@ function showLoading(text) {
 
 function goHome() {
     document.getElementById('results').classList.remove('active');
+    document.getElementById('quiz').classList.remove('active');
+    document.getElementById('multiplayer').classList.remove('active');
     document.getElementById('home').classList.add('active');
     document.getElementById('message').innerHTML = '';
+    
+    // Clean up multiplayer state
+    if (quizData.multiplayer.socket) {
+        quizData.multiplayer.socket.disconnect();
+    }
+    quizData.multiplayer = {
+        socket: null,
+        pin: null,
+        isHost: false,
+        players: [],
+        roomStarted: false
+    };
+    quizData.mode = 'single';
 }
 
 // Save score to localStorage
