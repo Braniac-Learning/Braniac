@@ -307,6 +307,12 @@ function showJoinForm() {
 }
 
 function displayRoom() {
+    // Hide create/join room buttons once a room is created or joined
+    const buttonsContainer = document.querySelector('#multiplayer-content > div');
+    if (buttonsContainer) {
+        buttonsContainer.style.display = 'none';
+    }
+    
     const html = `
         <div class="room-info" style="display: flex; flex-direction: column; align-items: center;">
             <div><strong>ROOM PIN:</strong> <span style="color: #EE247C; font-size: 1.3em;">${quizData.multiplayer.pin}</span></div>
