@@ -360,7 +360,7 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
     Make sure the questions are educational, varied in difficulty within the ${difficulty} level, and cover different aspects of the topic with creative scenarios.`;
     
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -565,7 +565,7 @@ async function generateQuizFromDocumentOriginal(fileContent, questionCount, diff
     ]`;
     
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1641,7 +1641,7 @@ app.post('/api/generate-quiz/document', upload.single('document'), handleMulterE
         
         try {
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
             const summaryPrompt = `Summarize the following document content in EXACTLY 3 words maximum. Be concise and descriptive:\n\n${fileContent.substring(0, 500)}`;
             const summaryResult = await model.generateContent(summaryPrompt);
             const summaryText = summaryResult.response.text().trim();

@@ -27,7 +27,7 @@ Classification rules:
 Return ONLY the JSON object, nothing else.`;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -40,6 +40,16 @@ Return ONLY the JSON object, nothing else.`;
     });
 
     const data = await response.json();
+    
+    // Handle API errors (quota, rate limits, etc.)
+    if (data.error) {
+      throw new Error(`API error: ${data.error.code} - ${data.error.message}`);
+    }
+    
+    if (!data.candidates || !data.candidates[0]) {
+      throw new Error('Invalid API response structure');
+    }
+    
     const text = data.candidates[0].content.parts[0].text;
     
     // Extract JSON from response (remove markdown if present)
