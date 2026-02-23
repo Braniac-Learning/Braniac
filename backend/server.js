@@ -1726,16 +1726,23 @@ io.on('connection', (socket) => {
             let guestCount = room.players.filter(p => p.name.startsWith('Guest ')).length + 1;
             name = `Guest ${guestCount}`;
             
-            // Ensure unique guest number
+            // Ensure unique guest number within current room players
             while (room.players.some(p => p.name === name)) {
                 guestCount++;
                 name = `Guest ${guestCount}`;
             }
         } else {
-            // Check if name already exists for non-guests
-            const nameExists = room.players.some(player => player.name.toLowerCase() === name.toLowerCase());
+            // Check if name already exists in THIS ROOM ONLY (case-insensitive)
+            // Only check current players in this specific room, not globally
+            const currentRoomPlayers = room.players || [];
+            const nameExists = currentRoomPlayers.some(player => 
+                player.id !== socket.id && // Don't check against same socket
+                player.name.toLowerCase() === name.toLowerCase()
+            );
+            
             if (nameExists) {
-                socket.emit('error', { message: 'Name already taken' });
+                console.log(`Name "${name}" already taken in room ${pin}`);
+                socket.emit('error', { message: 'Name already taken in this room' });
                 return;
             }
         }
