@@ -349,6 +349,15 @@ function createRoom() {
     })
     .then(r => r.json())
     .then(data => {
+        // Validate that we received questions
+        if (!data.questions || data.questions.length === 0) {
+            showMessage('Failed to generate quiz questions. Please try again.');
+            console.error('No questions received from quiz generation API');
+            return;
+        }
+        
+        console.log(`Generated ${data.questions.length} questions for multiplayer room`);
+        
         quizData.multiplayer.socket.emit('createRoom', {
             questions: data.questions,
             timeLimit: 0,
@@ -357,6 +366,7 @@ function createRoom() {
     })
     .catch(err => {
         showMessage('Failed to generate quiz: ' + err.message);
+        console.error('Quiz generation error:', err);
     });
 }
 

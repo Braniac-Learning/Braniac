@@ -1668,6 +1668,13 @@ io.on('connection', (socket) => {
     
     // Create a new quiz room
     socket.on('createRoom', (data) => {
+        // Validate that questions exist
+        if (!data.questions || !Array.isArray(data.questions) || data.questions.length === 0) {
+            console.error('Cannot create room: No questions provided');
+            socket.emit('error', { message: 'Cannot create room without questions' });
+            return;
+        }
+        
         const pin = generatePin();
         let hostName = data.hostName || 'Host';
         
@@ -1695,7 +1702,7 @@ io.on('connection', (socket) => {
         rooms.set(pin, room);
         socket.join(pin);
         
-        console.log(`Room created with PIN: ${pin}, Host: ${hostName}, Time Limit: ${data.timeLimit || 'No limit'}`);
+        console.log(`Room created with PIN: ${pin}, Host: ${hostName}, Questions: ${data.questions.length}, Time Limit: ${data.timeLimit || 'No limit'}`);
         socket.emit('roomCreated', { pin: pin, players: room.players });
     });
     
@@ -1771,8 +1778,15 @@ io.on('connection', (socket) => {
             return;
         }
         
+        // Validate questions before starting
+        if (!room.questions || room.questions.length === 0) {
+            console.error(`Cannot start quiz in room ${pin}: No questions available`);
+            socket.emit('error', { message: 'Cannot start quiz: No questions available' });
+            return;
+        }
+        
         room.isStarted = true;
-        console.log(`Quiz started in room ${pin}`);
+        console.log(`Quiz started in room ${pin} with ${room.questions.length} questions`);
         
         // Send quiz questions and timer settings to all players
         io.to(pin).emit('quizStarted', { 
