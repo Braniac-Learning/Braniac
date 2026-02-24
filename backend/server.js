@@ -11,9 +11,14 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // Load environment variables from .env for local development
 require('dotenv').config();
 
-// Gemini API key should be provided via environment variable for security.
-// Set the environment variable GEMINI_API_KEY in production (do NOT commit keys).
+// API keys should be provided via environment variables for security.
+// Set the environment variable GEMINI_API_KEY or GROQ_API_KEY in production (do NOT commit keys).
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyANt9WI56zqzUfP3M0p2gsLMkUfbFbUeWw';
+const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+const USE_GROQ = !!GROQ_API_KEY; // Use Groq if API key is available
+
+// Groq models (OpenAI-compatible)
+const GROQ_MODEL = 'llama-3.3-70b-versatile'; // Fast and capable model
 
 const app = express();
 const server = http.createServer(app);
@@ -77,6 +82,69 @@ const rooms = new Map();
 // Generate random 6-digit PIN
 function generatePin() {
     return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Universal AI API function - supports both Groq and Gemini
+async function callAI(prompt, options = {}) {
+    const { temperature = 0.7, maxTokens = 2048 } = options;
+    
+    if (USE_GROQ) {
+        // Use Groq API (OpenAI-compatible)
+        try {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${GROQ_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: GROQ_MODEL,
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: temperature,
+                    max_tokens: maxTokens
+                })
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Groq API Error:', response.status, errorText);
+                throw new Error(`Groq API failed: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.choices[0].message.content;
+        } catch (error) {
+            console.error('❌ Groq API error, falling back to Gemini:', error.message);
+            // Fall back to Gemini if Groq fails
+        }
+    }
+    
+    // Use Gemini API (fallback or primary if no Groq key)
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: temperature,
+                    maxOutputTokens: maxTokens
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Gemini API Error:', response.status, errorText);
+            throw new Error(`Gemini API failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+    } catch (error) {
+        console.error('❌ Both Groq and Gemini APIs failed:', error.message);
+        throw error;
+    }
 }
 
 // Gemini API functions
@@ -360,28 +428,8 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
     Make sure the questions are educational, varied in difficulty within the ${difficulty} level, and cover different aspects of the topic with creative scenarios.`;
     
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }]
-            })
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gemini API Error Response (Topic):', response.status, errorText);
-            throw new Error(`Failed to generate quiz from Gemini API: ${response.status} - ${errorText}`);
-        }
-        
-        const data = await response.json();
-        const text = data.candidates[0].content.parts[0].text;
+        // Use universal AI function (Groq or Gemini)
+        const text = await callAI(prompt, { temperature: 0.7, maxTokens: 2048 });
         
         // Extract JSON from the response
         const jsonMatch = text.match(/\[[\s\S]*\]/);
@@ -389,7 +437,7 @@ async function generateQuizFromTopicOriginal(topic, questionCount, difficulty = 
             const questions = JSON.parse(jsonMatch[0]);
             return shuffleAnswers(questions);
         } else {
-            throw new Error('Invalid response format from Gemini API');
+            throw new Error('Invalid response format from AI');
         }
     } catch (error) {
         console.error('Error generating quiz:', error);
@@ -565,28 +613,8 @@ async function generateQuizFromDocumentOriginal(fileContent, questionCount, diff
     ]`;
     
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }]
-            })
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Gemini API Error Response (Document):', response.status, errorText);
-            throw new Error(`Failed to generate quiz from Gemini API: ${response.status} - ${errorText}`);
-        }
-        
-        const data = await response.json();
-        const text = data.candidates[0].content.parts[0].text;
+        // Use universal AI function (Groq or Gemini)
+        const text = await callAI(prompt, { temperature: 0.7, maxTokens: 2048 });
         
         console.log(`📚 Document Analysis: Found ${documentAnalysis.sections.length} sections`);
         documentAnalysis.sections.forEach((section, index) => {
@@ -1641,7 +1669,7 @@ app.post('/api/generate-quiz/document', upload.single('document'), handleMulterE
         
         try {
             const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
             const summaryPrompt = `Summarize the following document content in EXACTLY 3 words maximum. Be concise and descriptive:\n\n${fileContent.substring(0, 500)}`;
             const summaryResult = await model.generateContent(summaryPrompt);
             const summaryText = summaryResult.response.text().trim();
