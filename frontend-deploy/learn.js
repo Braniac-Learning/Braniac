@@ -309,6 +309,11 @@ function showMultiplayer() {
     socket.on('error', (data) => {
         showMessage('Error: ' + data.message, 'error');
         console.error('Multiplayer error:', data.message);
+        // Clear any form that might be showing
+        const formContainer = document.getElementById('multiplayer-form');
+        if (formContainer) {
+            formContainer.innerHTML = '';
+        }
     });
 
     socket.on('disconnect', () => {
@@ -419,8 +424,34 @@ function createRoom() {
 }
 
 function showJoinForm() {
-    const pin = prompt('Enter room PIN:');
-    if (!pin) return;
+    const formHtml = `
+        <div class="quiz-form" style="width: 100%; max-width: 500px;">
+            <h3 style="margin-bottom: 20px; text-align: center;">Join Multiplayer Room</h3>
+            
+            <div class="form-group">
+                <label for="roomPin">Room PIN</label>
+                <input type="text" id="roomPin" placeholder="Enter 6-digit PIN" maxlength="6" required>
+            </div>
+
+            <button class="btn" onclick="joinRoom()" style="width: 100%; margin-top: 10px;">JOIN ROOM</button>
+            <button class="btn" onclick="cancelJoinRoom()" style="width: 100%; margin-top: 10px; background: #666;">CANCEL</button>
+        </div>
+    `;
+    
+    document.getElementById('multiplayer-form').innerHTML = formHtml;
+}
+
+function cancelJoinRoom() {
+    document.getElementById('multiplayer-form').innerHTML = '';
+}
+
+function joinRoom() {
+    const pin = document.getElementById('roomPin')?.value;
+
+    if (!pin || !pin.trim()) {
+        showMessage('Please enter a room PIN');
+        return;
+    }
 
     // Auto-use firstName from session
     const session = JSON.parse(localStorage.getItem('braniacSession'));
@@ -433,6 +464,9 @@ function showJoinForm() {
         // For guests, server will assign "Guest 1", "Guest 2", etc.
         name = 'Guest';
     }
+
+    // Show loading state
+    document.getElementById('multiplayer-form').innerHTML = '<div class="loading">Joining room...<div class="spinner"></div></div>';
 
     quizData.multiplayer.socket.emit('joinRoom', { pin, name });
 }
