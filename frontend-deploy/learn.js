@@ -251,8 +251,8 @@ function showMultiplayer() {
     quizData.mode = 'multiplayer';
 
     let html = `
-        <div style="display: flex; flex-direction: row; justify-content: center; gap: 20px; margin-bottom: 20px; width: 100%;">
-            <button class="btn multi-btn" onclick="createRoom()">CREATE ROOM</button>
+        <div id="multiplayer-menu" style="display: flex; flex-direction: row; justify-content: center; gap: 20px; margin-bottom: 20px; width: 100%;">
+            <button class="btn multi-btn" onclick="showCreateRoomForm()">CREATE ROOM</button>
             <button class="btn multi-btn" onclick="showJoinForm()">JOIN ROOM</button>
         </div>
         <div id="multiplayer-form" style="display: flex; flex-direction: column; align-items: center;"></div>
@@ -316,12 +316,52 @@ function showMultiplayer() {
     });
 }
 
-function createRoom() {
-    const topic = prompt('Enter a subject for the quiz:');
-    if (!topic) return;
+function showCreateRoomForm() {
+    const formHtml = `
+        <div class="quiz-form" style="width: 100%; max-width: 500px;">
+            <h3 style="margin-bottom: 20px; text-align: center;">Create Multiplayer Room</h3>
+            
+            <div class="form-group">
+                <label for="multiplayerTopic">Topic</label>
+                <input type="text" id="multiplayerTopic" placeholder="e.g., Photosynthesis, JavaScript, World War II" required>
+            </div>
 
-    const questionCount = prompt('Number of questions:', '5');
-    const difficulty = prompt('Difficulty (beginner/intermediate/advanced/expert):', 'intermediate');
+            <div class="form-group">
+                <label for="multiplayerQuestions">Number of Questions</label>
+                <input type="number" id="multiplayerQuestions" value="5" min="1" max="50" required>
+            </div>
+
+            <div class="form-group">
+                <label for="multiplayerDifficulty">Difficulty</label>
+                <select id="multiplayerDifficulty" required>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate" selected>Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="expert">Expert</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="createRoom()" style="width: 100%; margin-top: 10px;">CREATE ROOM</button>
+            <button class="btn" onclick="cancelRoomCreation()" style="width: 100%; margin-top: 10px; background: #666;">CANCEL</button>
+        </div>
+    `;
+    
+    document.getElementById('multiplayer-form').innerHTML = formHtml;
+}
+
+function cancelRoomCreation() {
+    document.getElementById('multiplayer-form').innerHTML = '';
+}
+
+function createRoom() {
+    const topic = document.getElementById('multiplayerTopic')?.value;
+    const questionCount = document.getElementById('multiplayerQuestions')?.value;
+    const difficulty = document.getElementById('multiplayerDifficulty')?.value;
+
+    if (!topic || !topic.trim()) {
+        showMessage('Please enter a topic');
+        return;
+    }
 
     // Store quiz name for score tracking
     quizData.quizName = topic;
@@ -337,8 +377,11 @@ function createRoom() {
         hostName = 'Guest';
     }
 
+    // Show loading state
+    document.getElementById('multiplayer-form').innerHTML = '<div class="loading">Creating room...<div class="spinner"></div></div>';
+
     // Generate quiz first
-            fetch(`${API_BASE}/api/generate-quiz/topic`, {
+    fetch(`${API_BASE}/api/generate-quiz/topic`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -353,6 +396,7 @@ function createRoom() {
         if (!data.questions || data.questions.length === 0) {
             showMessage('Failed to generate quiz questions. Please try again.');
             console.error('No questions received from quiz generation API');
+            document.getElementById('multiplayer-form').innerHTML = '';
             return;
         }
         
@@ -363,10 +407,14 @@ function createRoom() {
             timeLimit: 0,
             hostName: hostName
         });
+        
+        // Clear the form after successfully creating room
+        document.getElementById('multiplayer-form').innerHTML = '';
     })
     .catch(err => {
         showMessage('Failed to generate quiz: ' + err.message);
         console.error('Quiz generation error:', err);
+        document.getElementById('multiplayer-form').innerHTML = '';
     });
 }
 
