@@ -99,9 +99,16 @@ async function callAI(prompt, options = {}) {
                 },
                 body: JSON.stringify({
                     model: GROQ_MODEL,
-                    messages: [{ role: 'user', content: prompt }],
+                    messages: [
+                        { 
+                            role: 'system', 
+                            content: 'You are an expert educational content generator. Generate accurate, well-formatted quiz questions. Always follow the exact JSON format requested. Be precise and educational.'
+                        },
+                        { role: 'user', content: prompt }
+                    ],
                     temperature: temperature,
-                    max_tokens: maxTokens
+                    max_tokens: maxTokens,
+                    response_format: { type: "text" }
                 })
             });
             
