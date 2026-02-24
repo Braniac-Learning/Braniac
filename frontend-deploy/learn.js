@@ -314,6 +314,11 @@ function showMultiplayer() {
         if (formContainer) {
             formContainer.innerHTML = '';
         }
+        // Show the CREATE/JOIN buttons again
+        const menuButtons = document.getElementById('multiplayer-menu');
+        if (menuButtons) {
+            menuButtons.style.display = 'flex';
+        }
     });
 
     socket.on('disconnect', () => {
@@ -322,6 +327,12 @@ function showMultiplayer() {
 }
 
 function showCreateRoomForm() {
+    // Hide the CREATE/JOIN buttons
+    const menuButtons = document.getElementById('multiplayer-menu');
+    if (menuButtons) {
+        menuButtons.style.display = 'none';
+    }
+    
     const formHtml = `
         <div class="quiz-form" style="width: 100%; max-width: 500px;">
             <h3 style="margin-bottom: 20px; text-align: center;">Create Multiplayer Room</h3>
@@ -356,6 +367,11 @@ function showCreateRoomForm() {
 
 function cancelRoomCreation() {
     document.getElementById('multiplayer-form').innerHTML = '';
+    // Show the CREATE/JOIN buttons again
+    const menuButtons = document.getElementById('multiplayer-menu');
+    if (menuButtons) {
+        menuButtons.style.display = 'flex';
+    }
 }
 
 function createRoom() {
@@ -402,6 +418,11 @@ function createRoom() {
             showMessage('Failed to generate quiz questions. Please try again.');
             console.error('No questions received from quiz generation API');
             document.getElementById('multiplayer-form').innerHTML = '';
+            // Show the CREATE/JOIN buttons again
+            const menuButtons = document.getElementById('multiplayer-menu');
+            if (menuButtons) {
+                menuButtons.style.display = 'flex';
+            }
             return;
         }
         
@@ -420,10 +441,21 @@ function createRoom() {
         showMessage('Failed to generate quiz: ' + err.message);
         console.error('Quiz generation error:', err);
         document.getElementById('multiplayer-form').innerHTML = '';
+        // Show the CREATE/JOIN buttons again
+        const menuButtons = document.getElementById('multiplayer-menu');
+        if (menuButtons) {
+            menuButtons.style.display = 'flex';
+        }
     });
 }
 
 function showJoinForm() {
+    // Hide the CREATE/JOIN buttons
+    const menuButtons = document.getElementById('multiplayer-menu');
+    if (menuButtons) {
+        menuButtons.style.display = 'none';
+    }
+    
     const formHtml = `
         <div class="quiz-form" style="width: 100%; max-width: 500px;">
             <h3 style="margin-bottom: 20px; text-align: center;">Join Multiplayer Room</h3>
@@ -443,6 +475,11 @@ function showJoinForm() {
 
 function cancelJoinRoom() {
     document.getElementById('multiplayer-form').innerHTML = '';
+    // Show the CREATE/JOIN buttons again
+    const menuButtons = document.getElementById('multiplayer-menu');
+    if (menuButtons) {
+        menuButtons.style.display = 'flex';
+    }
 }
 
 function joinRoom() {
