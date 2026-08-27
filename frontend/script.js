@@ -2,7 +2,7 @@
 // Handles all game logic, Gemini API calls, and multiplayer functionality
 
 // Configuration - Update this URL after deploying the backend
-const API_BASE_URL = 'https://quizapp-production-6139.up.railway.app'; // Replace with your deployed backend URL
+const API_BASE_URL = 'https://braniac-ten.vercel.app'; // Replace with your deployed backend URL
 
 class QuizApp {
     constructor() {
