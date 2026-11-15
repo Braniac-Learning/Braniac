@@ -1,7 +1,7 @@
 {
-  "name": "frontend-deploy",
+  "name": "braniac",
   "version": "1.0.0",
-  "description": "This is the frontend part of the Quiz AI App. It's a static website that communicates with a separate backend API.",
+  "description": "BRANIAC - AI-powered quiz learning platform. Learn anything, outsmart everyone.",
   "main": "landing-script.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -16,6 +16,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.5.2",
     "http-server": "^14.1.1",
     "multer": "^2.0.2",
     "next-auth": "^4.24.13",

@@ -1,8 +1,8 @@
 // Quiz AI App - Main JavaScript File
 // Handles all game logic, Gemini API calls, and multiplayer functionality
 
-// Configuration - Update this URL after deploying the backend
-const API_BASE_URL = 'https://braniac-ten.vercel.app'; // Replace with your deployed backend URL
+// Configuration - uses same-origin by default; override with BRANIAC_API_URL env at build time if needed
+const API_BASE_URL = (window.BRANIAC_API_URL) || '';
 
 class QuizApp {
     constructor() {

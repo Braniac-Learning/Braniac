@@ -24,7 +24,7 @@ This is the backend API server for the Quiz AI App. It provides:
 ## ⚙️ Environment Variables
 
 Required:
-- `GEMINI_API_KEY` = `AIzaSyANt9WI56zqzUfP3M0p2gsLMkUfbFbUeWw`
+- `GEMINI_API_KEY` = `your-gemini-api-key-here` (get from Google AI Studio)
 
 Optional:
 - `NODE_ENV` = `production`

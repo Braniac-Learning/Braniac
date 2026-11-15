@@ -180,6 +180,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sign-in-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
   background: #F0F0F0;
   color: #0F0F0F;
   padding: 0.6rem 1.5rem;
@@ -247,6 +250,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .cta-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
   margin-top: 2rem;
   padding: 1rem 2.5rem;
   border: none;

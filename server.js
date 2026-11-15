@@ -7,30 +7,58 @@ const path = require('path');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const cookieParser = require('cookie-parser');
+const fs = require('fs');
 // Load environment variables from .env for local development
 require('dotenv').config();
+
+// Rate limiting
+let rateLimit;
+try {
+    rateLimit = require('express-rate-limit');
+} catch (e) {
+    // Graceful fallback if package not installed
+    rateLimit = null;
+    console.warn('express-rate-limit not installed, running without rate limiting');
+}
 
 // Gemini API key should be provided via environment variable for security.
 // Set the environment variable GEMINI_API_KEY in production (do NOT commit keys).
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY_HERE';
 
+// File-based persistence for users (falls back gracefully on serverless)
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+let persistenceEnabled = false;
+try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    persistenceEnabled = true;
+    console.log('✅ File persistence enabled at:', DATA_DIR);
+} catch (e) {
+    console.warn('⚠️  File persistence unavailable (serverless?), using in-memory only');
+}
+
 const app = express();
 const server = http.createServer(app);
+// CORS origins — env-override supported for specific domains
+const CORS_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'http://localhost:5000',
+    'http://localhost:8000',
+    'http://localhost:8001',
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+    /\.braniac\.app$/,
+    /braniac[-_]?.*\.netlify\.app$/,
+    /braniac[-_]?.*\.vercel\.app$/,
+    /\.vercel\.app$/,
+    /\.netlify\.app$/,
+    /\.github\.io$/
+];
+
 const io = socketIo(server, {
     cors: {
-        origin: [
-            'http://localhost:3000',
-            'http://localhost:5500',
-            'http://127.0.0.1:5500',
-            'http://localhost:5000',
-            'http://localhost:8000',
-            'http://localhost:8001',
-            'https://your-frontend-domain.netlify.app', // Update this with your actual frontend URL
-            'https://your-frontend-domain.vercel.app',  // Update this with your actual frontend URL
-            /\.netlify\.app$/,
-            /\.vercel\.app$/,
-            /\.github\.io$/
-        ],
+        origin: CORS_ORIGINS,
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -46,24 +74,31 @@ const upload = multer({
 
 // Middleware
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'http://localhost:5500',
-        'http://127.0.0.1:5500',
-        'http://localhost:5000',
-        'http://localhost:8000',
-        'http://localhost:8001',
-        'https://your-frontend-domain.netlify.app', // Update this with your actual frontend URL
-        'https://your-frontend-domain.vercel.app',  // Update this with your actual frontend URL
-        /\.netlify\.app$/,
-        /\.vercel\.app$/,
-        /\.github\.io$/
-    ],
+    origin: CORS_ORIGINS,
     credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname)));
+// Also serve frontend at /app path for direct access
+app.use('/app', express.static(path.join(__dirname, 'frontend')));
+
+// Rate limiters (applied per route)
+const quizRateLimiter = rateLimit ? rateLimit({
+    windowMs: 60 * 1000,     // 1 minute
+    max: 20,                 // 20 quiz generation requests per minute
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many quiz generation requests, please slow down.' }
+}) : (req, res, next) => next();
+
+const authRateLimiter = rateLimit ? rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 30,                   // 30 auth attempts per 15 minutes
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many auth attempts, please try again later.' }
+}) : (req, res, next) => next();
 
 // In-memory storage for quiz rooms
 const rooms = new Map();
@@ -71,6 +106,14 @@ const rooms = new Map();
 // Generate random 6-digit PIN
 function generatePin() {
     return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Sanitise user-supplied text before passing to AI prompt
+function sanitiseTopic(raw) {
+    return String(raw)
+        .replace(/[`<>"'\\{}|^~\[\]]/g, '') // strip shell/template special chars
+        .slice(0, 200)                         // cap length
+        .trim();
 }
 
 // Gemini API functions
@@ -431,12 +474,49 @@ app.get('/health', (req, res) => {
 });
 
 // -----------------------------
-// Simple Authentication (in-memory, development only)
+// Authentication with file-based persistence
 // -----------------------------
 const crypto = require('crypto');
-const users = new Map(); // username -> { username, firstName, passwordHash, salt, createdAt }
-const sessions = new Map(); // token -> username
+const sessions = new Map(); // token -> { username, createdAt } (always in-memory)
 const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+// User store — backed by JSON file when persistence is available
+function loadUsers() {
+    if (!persistenceEnabled) return new Map();
+    try {
+        if (fs.existsSync(USERS_FILE)) {
+            const raw = fs.readFileSync(USERS_FILE, 'utf-8');
+            const obj = JSON.parse(raw);
+            return new Map(Object.entries(obj));
+        }
+    } catch (e) {
+        console.warn('Could not load users file, starting fresh:', e.message);
+    }
+    return new Map();
+}
+
+function saveUsers(usersMap) {
+    if (!persistenceEnabled) return;
+    try {
+        const obj = Object.fromEntries(usersMap);
+        fs.writeFileSync(USERS_FILE, JSON.stringify(obj, null, 2), 'utf-8');
+    } catch (e) {
+        console.warn('Could not save users file:', e.message);
+    }
+}
+
+const users = loadUsers(); // username -> { username, firstName, passwordHash, salt, createdAt }
+
+// Purge expired sessions every 30 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, session] of sessions.entries()) {
+        if (now - session.createdAt > SESSION_TTL_MS) {
+            sessions.delete(token);
+        }
+    }
+}, 30 * 60 * 1000);
 
 function validateUsername(username) {
     // Allow letters, numbers, hyphens and underscores, no spaces
@@ -465,8 +545,20 @@ function createSessionToken(username) {
     return token;
 }
 
+function validateSession(token) {
+    if (!token) return null;
+    const s = sessions.get(token);
+    if (!s) return null;
+    // Check TTL
+    if (Date.now() - s.createdAt > SESSION_TTL_MS) {
+        sessions.delete(token);
+        return null;
+    }
+    return users.get(s.username) || null;
+}
+
 // Register route
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authRateLimiter, async (req, res) => {
     try {
         const { username, firstName, password, confirmPassword } = req.body || {};
 
@@ -500,11 +592,18 @@ app.post('/api/auth/register', async (req, res) => {
 
         const user = { username: normalized, firstName: firstName.trim(), passwordHash, salt, createdAt: Date.now() };
         users.set(normalized, user);
+        saveUsers(users); // persist to disk
 
         const token = createSessionToken(normalized);
 
-        // Set HttpOnly cookie
-        res.cookie('session', token, { httpOnly: true, sameSite: 'lax' });
+        // Set HttpOnly, Secure cookie
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('session', token, {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: isProduction,
+            maxAge: SESSION_TTL_MS
+        });
 
         return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
     } catch (err) {
@@ -514,7 +613,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Login route
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authRateLimiter, async (req, res) => {
     try {
         const { username, password } = req.body || {};
 
@@ -534,7 +633,13 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         const token = createSessionToken(normalized);
-        res.cookie('session', token, { httpOnly: true, sameSite: 'lax' });
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('session', token, {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: isProduction,
+            maxAge: SESSION_TTL_MS
+        });
 
         return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
     } catch (err) {
@@ -543,15 +648,27 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Simple middleware to get current user from session cookie or header
+// Get authenticated user from request
 function getUserFromRequest(req) {
-    const token = req.cookies && req.cookies.session || req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', '');
-    if (!token) return null;
-    const s = sessions.get(token);
-    if (!s) return null;
-    const user = users.get(s.username);
-    return user || null;
+    const token = (req.cookies && req.cookies.session) ||
+        (req.headers['authorization'] && req.headers['authorization'].replace('Bearer ', ''));
+    return validateSession(token);
 }
+
+// /api/auth/me — returns current user if logged in
+app.get('/api/auth/me', (req, res) => {
+    const user = getUserFromRequest(req);
+    if (!user) return res.status(401).json({ error: 'Not authenticated' });
+    return res.json({ ok: true, user: { username: user.username, firstName: user.firstName } });
+});
+
+// /api/auth/logout
+app.post('/api/auth/logout', (req, res) => {
+    const token = req.cookies && req.cookies.session;
+    if (token) sessions.delete(token);
+    res.clearCookie('session');
+    return res.json({ ok: true });
+});
 
 // Favicon route
 app.get('/favicon.ico', (req, res) => {
@@ -563,17 +680,28 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Serve quiz app directly
+app.get('/quiz', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
 // API Routes for quiz generation
-app.post('/api/generate-quiz/topic', async (req, res) => {
+app.post('/api/generate-quiz/topic', quizRateLimiter, async (req, res) => {
     try {
         const { topic, questionCount, difficulty } = req.body;
         
         if (!topic || !questionCount) {
             return res.status(400).json({ error: 'Topic and question count are required' });
         }
+
+        // Sanitise topic before passing to AI
+        const safeTopic = sanitiseTopic(topic);
+        if (!safeTopic) {
+            return res.status(400).json({ error: 'Invalid topic' });
+        }
         
-        console.log(`Generating quiz for topic: ${topic}, questions: ${questionCount}, difficulty: ${difficulty || 'intermediate'}`);
-        const questions = await generateQuizFromTopic(topic, questionCount, difficulty);
+        console.log(`Generating quiz for topic: ${safeTopic}, questions: ${questionCount}, difficulty: ${difficulty || 'intermediate'}`);
+        const questions = await generateQuizFromTopic(safeTopic, questionCount, difficulty);
         
         res.json({ questions });
     } catch (error) {
@@ -602,7 +730,7 @@ const handleMulterError = (err, req, res, next) => {
     next(err);
 };
 
-app.post('/api/generate-quiz/document', upload.single('document'), handleMulterError, async (req, res) => {
+app.post('/api/generate-quiz/document', quizRateLimiter, upload.single('document'), handleMulterError, async (req, res) => {
     try {
         const { questionCount, difficulty } = req.body;
         
@@ -678,7 +806,8 @@ io.on('connection', (socket) => {
                 score: 0
             }],
             isStarted: false,
-            results: []
+            results: [],
+            createdAt: Date.now()
         };
         
         rooms.set(pin, room);
@@ -1089,16 +1218,17 @@ function generateMockQuiz(topic, questionCount, difficulty = 'intermediate') {
     let allQuestions = [...selectedQuestions, ...additionalQuestions];
     
     // Generate more questions if needed to reach the requested count
+    // Balanced templates: answers distributed across A, B, C, D
     const questionTemplates = [
-        { q: `Why is ${topic} considered important in modern contexts?`, opts: ["Outdated concept", "Widely applicable", "Only academic", "Irrelevant"], correct: "B" },
+        { q: `Why is ${topic} considered important in modern contexts?`, opts: ["Widely applicable", "Outdated concept", "Only academic", "Irrelevant"], correct: "A" },
         { q: `What misconceptions exist about ${topic}?`, opts: ["All beliefs are correct", "People often oversimplify it", "No misconceptions", "It's too simple"], correct: "B" },
-        { q: `How do experts typically approach learning ${topic}?`, opts: ["Memorization only", "Systematic study", "Random trial", "Avoiding practice"], correct: "B" },
-        { q: `What are the main challenges in understanding ${topic}?`, opts: ["No challenges", "Complexity and interconnections", "Too easy", "Not worth learning"], correct: "B" },
-        { q: `How does ${topic} relate to real-world problem solving?`, opts: ["Not related", "Essential foundation", "Only theory", "Rarely used"], correct: "B" },
+        { q: `How do experts typically approach learning ${topic}?`, opts: ["Memorization only", "Random trial", "Systematic study", "Avoiding practice"], correct: "C" },
+        { q: `What are the main challenges in understanding ${topic}?`, opts: ["No challenges", "Too easy", "Not worth learning", "Complexity and interconnections"], correct: "D" },
+        { q: `How does ${topic} relate to real-world problem solving?`, opts: ["Essential foundation", "Not related", "Only theory", "Rarely used"], correct: "A" },
         { q: `What skills are developed through studying ${topic}?`, opts: ["No skills", "Analytical and critical thinking", "Only memorization", "Nothing useful"], correct: "B" },
-        { q: `How can ${topic} be applied in your daily life?`, opts: ["Cannot be applied", "Multiple practical uses", "Only in work", "Never applicable"], correct: "B" },
-        { q: `What is the relationship between ${topic} and innovation?`, opts: ["No relationship", "Drives innovation", "Prevents innovation", "Unrelated concept"], correct: "B" },
-        { q: `How does ${topic} contribute to professional success?`, opts: ["Doesn't help", "Highly valuable skill", "Minimal impact", "Career limiting"], correct: "B" },
+        { q: `How can ${topic} be applied in your daily life?`, opts: ["Cannot be applied", "Only in work", "Multiple practical uses", "Never applicable"], correct: "C" },
+        { q: `What is the relationship between ${topic} and innovation?`, opts: ["No relationship", "Prevents innovation", "Unrelated concept", "Drives innovation"], correct: "D" },
+        { q: `How does ${topic} contribute to professional success?`, opts: ["Highly valuable skill", "Doesn't help", "Minimal impact", "Career limiting"], correct: "A" },
         { q: `What evidence supports understanding ${topic}?`, opts: ["No evidence", "Research and real-world success", "Just opinion", "Theoretical only"], correct: "B" }
     ];
 
@@ -1256,17 +1386,17 @@ function generateMockDocumentQuiz(fileContent, questionCount, difficulty = 'inte
 
     let allQuestions = [...selectedQuestions, ...additionalQuestions];
 
-    // Generate more questions dynamically if needed
+    // Balanced document question templates: answers distributed across A, B, C, D
     const docQuestionTemplates = [
-        { q: "What is the primary focus of the document?", opts: ["Unrelated topics", "Main subject matter", "Contradictions", "Unimportant details"], correct: "B" },
+        { q: "What is the primary focus of the document?", opts: ["Main subject matter", "Unrelated topics", "Contradictions", "Unimportant details"], correct: "A" },
         { q: "How well does the document support its main points?", opts: ["Not supported", "With evidence and examples", "Only opinion", "Poorly supported"], correct: "B" },
-        { q: "What key takeaway can be extracted from this document?", opts: ["No clear message", "Important insights provided", "Confusing", "Irrelevant"], correct: "B" },
-        { q: "How does this document enhance understanding of the topic?", opts: ["No enhancement", "Provides clarity and depth", "Causes confusion", "Oversimplifies"], correct: "B" },
-        { q: "What makes this document valuable for learners?", opts: ["No value", "Clear explanations and examples", "Too technical", "Lacks structure"], correct: "B" },
+        { q: "What key takeaway can be extracted from this document?", opts: ["No clear message", "Confusing", "Important insights provided", "Irrelevant"], correct: "C" },
+        { q: "How does this document enhance understanding of the topic?", opts: ["No enhancement", "Causes confusion", "Oversimplifies", "Provides clarity and depth"], correct: "D" },
+        { q: "What makes this document valuable for learners?", opts: ["Clear explanations and examples", "No value", "Too technical", "Lacks structure"], correct: "A" },
         { q: "How are concepts organized in this document?", opts: ["Randomly scattered", "Logically structured", "Very confusing", "Too simple"], correct: "B" },
-        { q: "What aspects of the content are most significant?", opts: ["All equally unimportant", "Core concepts critical to understanding", "Only minor details matter", "Nothing significant"], correct: "B" },
-        { q: "How does the document address potential questions?", opts: ["Ignores questions", "Thoroughly addresses concerns", "Avoids clarification", "No explanation provided"], correct: "B" },
-        { q: "What would someone learn by studying this document?", opts: ["Nothing useful", "Practical and theoretical knowledge", "Only basics", "Irrelevant information"], correct: "B" },
+        { q: "What aspects of the content are most significant?", opts: ["All equally unimportant", "Only minor details", "Core concepts critical to understanding", "Nothing significant"], correct: "C" },
+        { q: "How does the document address potential questions?", opts: ["Ignores questions", "Avoids clarification", "No explanation", "Thoroughly addresses concerns"], correct: "D" },
+        { q: "What would someone learn by studying this document?", opts: ["Practical and theoretical knowledge", "Nothing useful", "Only basics", "Irrelevant information"], correct: "A" },
         { q: "How applicable is this document's content in practice?", opts: ["Never applicable", "Highly practical and useful", "Only theoretical", "Rarely applicable"], correct: "B" }
     ];
 
