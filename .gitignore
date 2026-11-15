@@ -101,3 +101,5 @@ logs
 data/
 *.json.bak
 cookiejar.txt
+.vercel
+.env*
