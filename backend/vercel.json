@@ -1,7 +1,13 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/index.js", "use": "@vercel/node" }
+    { "src": "api/index.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "style.css", "use": "@vercel/static" },
+    { "src": "script.js", "use": "@vercel/static" },
+    { "src": "favicon.ico", "use": "@vercel/static" },
+    { "src": "assets/**", "use": "@vercel/static" },
+    { "src": "frontend/**", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.js" },
@@ -13,16 +19,12 @@
 
     { "src": "/frontend/(.*)", "dest": "/frontend/$1" },
     { "src": "/assets/(.*)", "dest": "/assets/$1" },
-
     { "src": "/style.css", "dest": "/style.css" },
     { "src": "/script.js", "dest": "/script.js" },
-    { "src": "/landing-script.js", "dest": "/landing-script.js" },
     { "src": "/favicon.ico", "dest": "/favicon.ico" },
-
     { "src": "/favicon/(.*)", "dest": "/assets/favicon/$1" },
 
     { "src": "/", "dest": "/index.html" },
-
     { "src": "/(.*)", "dest": "/api/index.js" }
   ]
 }
