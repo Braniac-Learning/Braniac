@@ -7,7 +7,22 @@
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/health", "dest": "/api/index.js" },
     { "src": "/socket.io/(.*)", "dest": "/api/index.js" },
-    { "src": "/auth/(.*)", "dest": "/api/index.js" },
+
+    { "src": "/quiz", "dest": "/frontend/index.html" },
+    { "src": "/app(.*)", "dest": "/frontend/index.html" },
+
+    { "src": "/frontend/(.*)", "dest": "/frontend/$1" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+
+    { "src": "/style.css", "dest": "/style.css" },
+    { "src": "/script.js", "dest": "/script.js" },
+    { "src": "/landing-script.js", "dest": "/landing-script.js" },
+    { "src": "/favicon.ico", "dest": "/favicon.ico" },
+
+    { "src": "/favicon/(.*)", "dest": "/assets/favicon/$1" },
+
+    { "src": "/", "dest": "/index.html" },
+
     { "src": "/(.*)", "dest": "/api/index.js" }
   ]
 }
